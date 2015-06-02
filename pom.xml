@@ -12,7 +12,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <app.mainClass>com.jadenine.circle.CircleService</app.mainClass>
+        <app.mainClass>com.jadenine.circle.CircleApplication</app.mainClass>
     </properties>
 
     <dependencies>
@@ -20,6 +20,11 @@
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-core</artifactId>
             <version>0.8.0-rc1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-storage</artifactId>
+            <version>2.2.0</version>
         </dependency>
     </dependencies>
 
