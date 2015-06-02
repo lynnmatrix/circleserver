@@ -1,0 +1,42 @@
+<assembly
+	xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2
+  http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+
+	<id>bin</id>
+	<formats>
+		<format>dir</format>
+	</formats>
+	<baseDirectory />
+	<dependencySets>
+		<dependencySet>
+			<outputDirectory>repo</outputDirectory>
+		</dependencySet>
+	</dependencySets>
+	<files>
+		<file>
+			<source>src/main/config/app.cmd</source>
+			<outputDirectory>/</outputDirectory>
+			<filtered>true</filtered>
+		</file>
+		<file>
+			<source>src/main/config/web.config</source>
+			<outputDirectory>/</outputDirectory>
+			<filtered>true</filtered>
+		</file>
+	</files>
+	<fileSets>
+		<fileSet>
+			<directory>target/classes</directory>
+			<outputDirectory>classes</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>src/main/config</directory>
+			<outputDirectory />
+			<excludes>
+				<exclude>web.config</exclude>
+			</excludes>
+		</fileSet>
+	</fileSets>
+</assembly>
