@@ -1,8 +1,7 @@
 package com.jadenine.circle;
 
-import com.jadenine.circle.resources.AddApResource;
-import com.jadenine.circle.resources.HelloWorldResource;
-import com.jadenine.circle.resources.ListApResource;
+import com.jadenine.circle.resources.ApResource;
+import com.jadenine.circle.resources.MessageResource;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.table.CloudTable;
 
@@ -38,9 +37,8 @@ public class CircleApplication extends Application<CircleConfiguration> {
     public void run(CircleConfiguration circleConfiguration, Environment environment) throws
             Exception {
         JerseyEnvironment jersey = environment.jersey();
-        jersey.register(new ListApResource());
-        jersey.register(new HelloWorldResource());
-        jersey.register(new AddApResource());
+        jersey.register(new ApResource());
+        jersey.register(new MessageResource());
     }
 
 }

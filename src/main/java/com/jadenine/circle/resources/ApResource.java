@@ -13,18 +13,41 @@ import java.util.List;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 /**
  * Created by linym on 6/2/15.
  */
-@Path("/addAp")
-@Produces(MediaType.APPLICATION_JSON)
-public class AddApResource {
+@Path("/ap")
+public class ApResource {
     @GET
-    public JSONListWrapper addAp(@QueryParam("user") String user, @QueryParam("ap")String ap) {
+    @Path("/list/t/{user}")
+    public String list(@PathParam("user") String user) {
+        return "Hello, list for " + user;
+    }
+
+    @GET
+    @Path("/list/{user}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public JSONListWrapper listAp(@PathParam("user") String user) {
+        TableQuery<UserAp> query = TableQuery.from(UserAp.class).where(TableQuery
+                .generateFilterCondition(Storage.ROW_KEY, TableQuery.QueryComparisons.EQUAL, user));
+
+        CloudTable userApTable = Storage.getInstance().getUserApTable();
+
+        List<UserAp> userAps = new ArrayList<>();
+        for(UserAp userAp : userApTable.execute(query)){
+            userAps.add(userAp);
+        }
+        return new JSONListWrapper(userAps);
+    }
+
+    @GET
+    @Path("/add/{user}/{ap}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public JSONListWrapper addAp(@PathParam("user") String user, @PathParam("ap")String ap) {
         UserAp userAP = new UserAp(user, ap);
         CloudTable userApTable = Storage.getInstance().getUserApTable();
         TableOperation insertUserAp = TableOperation.insert(userAP);

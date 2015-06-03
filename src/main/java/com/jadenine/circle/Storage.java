@@ -29,36 +29,42 @@ public class Storage {
                     "AccountKey=SPa+eHBBeJDLV70p3OAH6ldQiObmPDN14QUUXwPbk0yywSwruIff5mwfOBgXurEyo1tUQBcLgKtCgsbDipI/kQ==";
 
 
-    final CloudStorageAccount account ;
-
-    final CloudTableClient tableClient ;
+    final CloudStorageAccount account;
+    final CloudStorageAccount publishAccount;
+    final CloudStorageAccount devAccount;
+    final CloudTableClient tableClient;
     final CloudTable userTable;
-    final CloudTable userApTable ;
+    final CloudTable userApTable;
     final CloudTable messageTable;
 
     private Storage() throws URISyntaxException, StorageException, InvalidKeyException {
-        account = CloudStorageAccount.parse(storageConnectionString);
+        publishAccount = CloudStorageAccount.parse(storageConnectionString);
+        devAccount = publishAccount.getDevelopmentStorageAccount();
+
+        account = publishAccount;
 
         tableClient = account.createCloudTableClient();
 
         userTable = tableClient.getTableReference(TABLE_USER);
         userApTable = tableClient.getTableReference(TABLE_USER_AP);
         messageTable = tableClient.getTableReference(TABLE_MESSAGE);
+
     }
 
     private static Storage sStorage = null;
-    public static synchronized Storage getInstance(){
-        if(null == sStorage) {
+
+    public static synchronized Storage getInstance() {
+        if (null == sStorage) {
             try {
                 sStorage = new Storage();
             } catch (Throwable throwable) {
-                throw  new RuntimeException("Fail to initialize Storage", throwable);
+                throw new RuntimeException("Fail to initialize Storage", throwable);
             }
         }
         return sStorage;
     }
 
-    public CloudTable getUserApTable(){
+    public CloudTable getUserApTable() {
         return userApTable;
     }
 
@@ -66,7 +72,8 @@ public class Storage {
         return userTable;
     }
 
-    public CloudTable getMessageTable(){
+    public CloudTable getMessageTable() {
         return messageTable;
     }
+
 }
