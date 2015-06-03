@@ -125,6 +125,7 @@
                         </executions>
                         <configuration>
                             <applicationName>circle</applicationName>
+                            <serverId>chinacloudsites</serverId>
                         </configuration>
 
                     </plugin>
