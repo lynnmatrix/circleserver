@@ -6,4 +6,4 @@ server:
 logging:
   level: INFO
   loggers:
-    "com.sun.jersey": ON
+    "com.sun.jersey": OFF

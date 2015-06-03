@@ -2,7 +2,7 @@ package com.jadenine.circle.resources;
 
 import com.jadenine.circle.Storage;
 import com.jadenine.circle.entity.UserAp;
-import com.jadenine.circle.response.UserApList;
+import com.jadenine.circle.response.JSONListWrapper;
 import com.microsoft.azure.storage.table.CloudTable;
 import com.microsoft.azure.storage.table.TableQuery;
 
@@ -29,17 +29,17 @@ public class ListApResource {
     @Path("/{user}")
     @Produces(MediaType.APPLICATION_JSON)
     @GET
-    public UserApList listAp(@PathParam("user") String user) {
-//        TableQuery<UserAp> query = TableQuery.from(UserAp.class).where(TableQuery
-//                .generateFilterCondition(Storage.ROW_KEY, TableQuery.QueryComparisons.EQUAL, user));
-//
-//        CloudTable userApTable = Storage.getInstance().getUserApTable();
+    public JSONListWrapper listAp(@PathParam("user") String user) {
+        TableQuery<UserAp> query = TableQuery.from(UserAp.class).where(TableQuery
+                .generateFilterCondition(Storage.ROW_KEY, TableQuery.QueryComparisons.EQUAL, user));
+
+        CloudTable userApTable = Storage.getInstance().getUserApTable();
 
         List<UserAp> userAps = new ArrayList<>();
         userAps.add(new UserAp("user1", "ap1"));
-//        for(UserAp userAp : userApTable.execute(query)){
-//            userAps.add(userAp);
-//        }
-        return new UserApList(userAps);
+        for(UserAp userAp : userApTable.execute(query)){
+            userAps.add(userAp);
+        }
+        return new JSONListWrapper(userAps);
     }
 }

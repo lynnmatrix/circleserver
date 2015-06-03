@@ -2,6 +2,7 @@ package com.jadenine.circle.resources;
 
 import com.jadenine.circle.Storage;
 import com.jadenine.circle.entity.UserAp;
+import com.jadenine.circle.response.JSONListWrapper;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.table.CloudTable;
 import com.microsoft.azure.storage.table.TableOperation;
@@ -23,7 +24,7 @@ import javax.ws.rs.core.MediaType;
 @Produces(MediaType.APPLICATION_JSON)
 public class AddApResource {
     @GET
-    public List<UserAp> addAp(@QueryParam("user") String user, @QueryParam("ap")String ap) {
+    public JSONListWrapper addAp(@QueryParam("user") String user, @QueryParam("ap")String ap) {
         UserAp userAP = new UserAp(user, ap);
         CloudTable userApTable = Storage.getInstance().getUserApTable();
         TableOperation insertUserAp = TableOperation.insert(userAP);
@@ -40,7 +41,7 @@ public class AddApResource {
         for(UserAp userAp : userApTable.execute(query)){
             userAps.add(userAp);
         }
-        return userAps;
+        return new JSONListWrapper(userAps);
     }
 
 }

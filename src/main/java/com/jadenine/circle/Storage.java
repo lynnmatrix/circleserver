@@ -24,6 +24,7 @@ public class Storage {
     // Define the connection-string with your values.
     public static final String storageConnectionString =
             "DefaultEndpointsProtocol=http;" +
+                    "TableEndpoint=http://circlestorage.table.core.chinacloudapi.cn/;" +
                     "AccountName=circlestorage;" +
                     "AccountKey=SPa+eHBBeJDLV70p3OAH6ldQiObmPDN14QUUXwPbk0yywSwruIff5mwfOBgXurEyo1tUQBcLgKtCgsbDipI/kQ==";
 

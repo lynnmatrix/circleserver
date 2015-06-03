@@ -1,5 +1,6 @@
 package com.jadenine.circle;
 
+import com.jadenine.circle.resources.AddApResource;
 import com.jadenine.circle.resources.HelloWorldResource;
 import com.jadenine.circle.resources.ListApResource;
 import com.microsoft.azure.storage.StorageException;
@@ -39,7 +40,7 @@ public class CircleApplication extends Application<CircleConfiguration> {
         JerseyEnvironment jersey = environment.jersey();
         jersey.register(new ListApResource());
         jersey.register(new HelloWorldResource());
-//        jersey.register(new AddApResource());
+        jersey.register(new AddApResource());
     }
 
 }

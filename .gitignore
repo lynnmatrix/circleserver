@@ -18,3 +18,4 @@ report
 .clover/
 run.sh
 target/
+tmp-git-deployment-staging/
