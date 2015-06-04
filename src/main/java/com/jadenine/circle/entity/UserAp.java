@@ -17,32 +17,27 @@ public class UserAp extends TableServiceEntity {
         this.partitionKey = ap;
     }
 
-    @JsonProperty
     public String getUser(){
         return rowKey;
     }
 
-    @JsonProperty
-    public String getAp(){
-        return partitionKey;
-    }
-
-    @JsonProperty
     public void setUser(String user){
         rowKey = user;
     }
 
-    @JsonProperty
+    public String getAp(){
+        return partitionKey;
+    }
+
     public void setAp(String ap) {
         partitionKey = ap;
     }
 
-    @JsonProperty
+    @JsonProperty("ssid")
     public String getSSID() {
         return SSID;
     }
 
-    @JsonProperty
     public void setSSID(String SSID) {
         this.SSID = SSID;
     }
