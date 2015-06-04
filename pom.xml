@@ -126,6 +126,7 @@
                         <configuration>
                             <applicationName>circle</applicationName>
                             <serverId>chinacloudsites</serverId>
+                            <deployToChinaCloud>true</deployToChinaCloud>
                         </configuration>
 
                     </plugin>
