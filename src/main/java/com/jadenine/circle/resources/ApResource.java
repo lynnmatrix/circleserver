@@ -11,7 +11,10 @@ import com.microsoft.azure.storage.table.TableQuery;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.Valid;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -44,13 +47,13 @@ public class ApResource {
         return new JSONListWrapper(userAps);
     }
 
-    @GET
-    @Path("/add/{user}/{ap}")
+    @POST
+    @Path("/add")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public JSONListWrapper addAp(@PathParam("user") String user, @PathParam("ap")String ap) {
-        UserAp userAP = new UserAp(user, ap);
+    public JSONListWrapper addAp(@Valid UserAp userAP) {
         CloudTable userApTable = Storage.getInstance().getUserApTable();
-        TableOperation insertUserAp = TableOperation.insert(userAP);
+        TableOperation insertUserAp = TableOperation.insertOrMerge(userAP);
         try {
             userApTable.execute(insertUserAp);
         } catch (StorageException e) {
@@ -58,7 +61,8 @@ public class ApResource {
         }
 
         TableQuery<UserAp> query = TableQuery.from(UserAp.class).where(TableQuery
-                .generateFilterCondition(Storage.ROW_KEY, TableQuery.QueryComparisons.EQUAL, user));
+                .generateFilterCondition(Storage.ROW_KEY, TableQuery.QueryComparisons.EQUAL,
+                        userAP.getUser()));
 
         List<UserAp> userAps = new ArrayList<>();
         for(UserAp userAp : userApTable.execute(query)){
