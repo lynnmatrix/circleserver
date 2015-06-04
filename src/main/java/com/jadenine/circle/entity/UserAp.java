@@ -9,6 +9,8 @@ import com.microsoft.azure.storage.table.TableServiceEntity;
  */
 @JsonIgnoreProperties(value = {"rowKey", "partitionKey"}, ignoreUnknown = true)
 public class UserAp extends TableServiceEntity {
+    private String SSID;
+
     public UserAp(){}
     public UserAp(String user, String ap) {
         this.rowKey = user;
@@ -34,4 +36,15 @@ public class UserAp extends TableServiceEntity {
     public void setAp(String ap) {
         partitionKey = ap;
     }
+
+    @JsonProperty
+    public String getSSID() {
+        return SSID;
+    }
+
+    @JsonProperty
+    public void setSSID(String SSID) {
+        this.SSID = SSID;
+    }
+
 }
