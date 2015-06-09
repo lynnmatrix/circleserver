@@ -2,6 +2,7 @@ package com.jadenine.circle.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.jadenine.circle.Storage;
 import com.microsoft.azure.storage.table.TableServiceEntity;
 
 import javax.validation.constraints.NotNull;
@@ -10,7 +11,7 @@ import javax.validation.constraints.Size;
 /**
  * Created by linym on 6/2/15.
  */
-@JsonIgnoreProperties(value = {"rowKey", "partitionKey"}, ignoreUnknown = true)
+@JsonIgnoreProperties(value = {Storage.PARTITION_KEY, Storage.ROW_KEY}, ignoreUnknown = true)
 public class Message extends TableServiceEntity {
     @NotNull
     @Size(min=1, max=256)
@@ -18,6 +19,14 @@ public class Message extends TableServiceEntity {
 
     @NotNull
     private String user;
+
+    public void setTopic(String topic) {
+        partitionKey = topic;
+    }
+
+    public String getTopic(){
+        return partitionKey;
+    }
 
     public void setMessageId(String messageId) {
         rowKey = messageId;
@@ -27,12 +36,12 @@ public class Message extends TableServiceEntity {
         return rowKey;
     }
 
-    public void setAp(String ap) {
-        partitionKey = ap;
+    public void setUser(String user){
+        this.user = user;
     }
 
-    public String getAp(){
-        return partitionKey;
+    public String getUser(){
+        return user;
     }
 
     public void setContent(String content) {
@@ -41,13 +50,5 @@ public class Message extends TableServiceEntity {
 
     public String getContent(){
         return content;
-    }
-
-    public void setUser(String user){
-        this.user = user;
-    }
-
-    public String getUser(){
-        return user;
     }
 }

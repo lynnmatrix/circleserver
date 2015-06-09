@@ -2,6 +2,7 @@ package com.jadenine.circle;
 
 import com.jadenine.circle.resources.ApResource;
 import com.jadenine.circle.resources.MessageResource;
+import com.jadenine.circle.resources.TopicResource;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.table.CloudTable;
 
@@ -29,6 +30,9 @@ public class CircleApplication extends Application<CircleConfiguration> {
         CloudTable userApTable = Storage.getInstance().getUserApTable();
         userApTable.createIfNotExists();
 
+        CloudTable topicTable = Storage.getInstance().getTopicTable();
+        topicTable.createIfNotExists();
+
         CloudTable messageTable = Storage.getInstance().getMessageTable();
         messageTable.createIfNotExists();
     }
@@ -38,6 +42,7 @@ public class CircleApplication extends Application<CircleConfiguration> {
             Exception {
         JerseyEnvironment jersey = environment.jersey();
         jersey.register(new ApResource());
+        jersey.register(new TopicResource());
         jersey.register(new MessageResource());
     }
 
