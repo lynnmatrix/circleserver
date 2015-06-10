@@ -9,6 +9,10 @@ import com.microsoft.azure.storage.table.TableServiceEntity;
 @JsonIgnoreProperties(value = {"rowKey", "partitionKey"})
 public class Topic extends TableServiceEntity{
 
+    private String user;
+
+    private String topic;
+
     private String latestMessageId;
 
     public Topic(){}
@@ -16,6 +20,10 @@ public class Topic extends TableServiceEntity{
     public Topic(String ap, Message firstMessage) {
         partitionKey = ap;
         rowKey = firstMessage.getMessageId();
+
+        user = firstMessage.getUser();
+        topic = firstMessage.getContent();
+
         latestMessageId = firstMessage.getMessageId();
     }
 
@@ -33,6 +41,22 @@ public class Topic extends TableServiceEntity{
 
     public void setTopicId(String topicId){
         this.rowKey = topicId;
+    }
+
+    public String getUser() {
+        return user;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
+    }
+
+    public String getTopic(){
+        return topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
     }
 
     public String getLatestMessageId(){

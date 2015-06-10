@@ -52,28 +52,35 @@ public class MessageResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addMessage(@QueryParam("ap")String ap, @Valid Message message) throws
             StorageException {
-        if(null == message.getMessageId() || message.getMessageId().isEmpty()) {
-            message.setMessageId(UUID.randomUUID().toString());
+
+        if(null != message.getMessageId() && !message.getMessageId().isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
         }
+
+        boolean addTopic = null == message.getTopic() || message.getTopic().isEmpty();
+
+        String messageId = UUID.randomUUID().toString();
+        message.setMessageId(messageId);
 
         Topic topic = null;
-        if(null != message.getTopic() && message.getTopic().isEmpty()) {
+        if (!addTopic) {
             topic = queryTopic(ap, message.getTopic());
-        }else {
-            message.setTopic(message.getMessageId());
+            addTopic |= null == topic;
         }
 
-        if(null == topic) {
+        if (addTopic) {
             topic = new Topic(ap, message);
+            TableOperation topicUpdateOp = TableOperation.insert(topic);
+            Storage.getInstance().getTopicTable().execute(topicUpdateOp);
         } else {
             topic.setLatestMessageId(message.getMessageId());
+
+            TableOperation addOp = TableOperation.insert(message);
+            Storage.getInstance().getMessageTable().execute(addOp);
+
+            TableOperation topicUpdateOp = TableOperation.replace(topic);
+            Storage.getInstance().getTopicTable().execute(topicUpdateOp);
         }
-
-        TableOperation topicUpdateOp = TableOperation.insertOrReplace(topic);
-        Storage.getInstance().getTopicTable().execute(topicUpdateOp);
-
-        TableOperation addOp = TableOperation.insert(message);
-        Storage.getInstance().getMessageTable().execute(addOp);
 
         return Response.ok().build();
     }

@@ -1,19 +1,26 @@
 package com.jadenine.circle.resources;
 
 import com.jadenine.circle.Storage;
+import com.jadenine.circle.entity.Message;
 import com.jadenine.circle.entity.Topic;
 import com.jadenine.circle.response.JSONListWrapper;
+import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.table.CloudTable;
 import com.microsoft.azure.storage.table.TableQuery;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.Valid;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 /**
  * Created by linym on 6/9/15.
@@ -37,4 +44,5 @@ public class TopicResource {
 
         return new JSONListWrapper(topics);
     }
+
 }
