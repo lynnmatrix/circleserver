@@ -20,11 +20,11 @@ public class Message extends TableServiceEntity {
     @NotNull
     private String user;
 
-    public void setTopic(String topic) {
+    public void setTopicId(String topic) {
         partitionKey = topic;
     }
 
-    public String getTopic(){
+    public String getTopicId(){
         return partitionKey;
     }
 

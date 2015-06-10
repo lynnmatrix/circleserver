@@ -57,14 +57,14 @@ public class MessageResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        boolean addTopic = null == message.getTopic() || message.getTopic().isEmpty();
+        boolean addTopic = null == message.getTopicId() || message.getTopicId().isEmpty();
 
         String messageId = UUID.randomUUID().toString();
         message.setMessageId(messageId);
 
         Topic topic = null;
         if (!addTopic) {
-            topic = queryTopic(ap, message.getTopic());
+            topic = queryTopic(ap, message.getTopicId());
             addTopic |= null == topic;
         }
 
