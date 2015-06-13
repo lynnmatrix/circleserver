@@ -16,21 +16,21 @@ public class NotificationService {
 
         // And if you have many alias, you can also upload a file containing these alias, then
         // use file_id to send customized notification.
-            unicast.setPredefinedKeyValue("appkey", appkey);
-            unicast.setPredefinedKeyValue("timestamp", Integer.toString((int) (System
-                    .currentTimeMillis() / 1000)));
+        unicast.setPredefinedKeyValue("appkey", appkey);
+        unicast.setPredefinedKeyValue("timestamp", Integer.toString((int) (System
+                .currentTimeMillis() / 1000)));
 
-            unicast.setPredefinedKeyValue("ticker", "Android customizedcast ticker");
-            unicast.setPredefinedKeyValue("title", "中文的title");
-            unicast.setPredefinedKeyValue("text", "Android customizedcast text");
-            unicast.setPredefinedKeyValue("after_open", "go_app");
-            unicast.setPredefinedKeyValue("display_type", "notification");
+        unicast.setPredefinedKeyValue("ticker", "Android customizedcast ticker");
+        unicast.setPredefinedKeyValue("title", "中文的title");
+        unicast.setPredefinedKeyValue("text", "Android customizedcast text");
+        unicast.setPredefinedKeyValue("after_open", "go_app");
+        unicast.setPredefinedKeyValue("display_type", "notification");
 
-            unicast.setPredefinedKeyValue("production_mode", PRODUCTION_MODE);
+        unicast.setPredefinedKeyValue("production_mode", PRODUCTION_MODE);
 
-            unicast.setPredefinedKeyValue("device_tokens",
-                    "AoLk9ARkNoGWPKHdg9Z2CuzNV7qzoTR9x9vZRbhnSW1x");
+        unicast.setPredefinedKeyValue("device_tokens",
+                "AoLk9ARkNoGWPKHdg9Z2CuzNV7qzoTR9x9vZRbhnSW1x");
 
-            return unicast.send();
+        return unicast.send();
     }
 }

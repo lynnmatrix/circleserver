@@ -52,64 +52,40 @@ public abstract class UmengNotification {
     }
 
     public boolean send() throws Exception{
-            String url = host + postPath;
-            ObjectMapper mapper = new ObjectMapper();
-//            String postBody = mapper.writeValueAsString(notification);
-            String postBody = "{\n" +
-                    "\t\"appkey\":\"557a4f3f67e58e45f2000660\",\n" +
-                    "\t\"production_mode\":\"false\",\n" +
-                    "\t\"description\":\"first\",\n" +
-                    "\t\"type\":\"unicast\",\n" +
-                    "\t\"payload\":{\n" +
-                    "\t\t\"display_type\":\"notification\",\n" +
-                    "\t\t\"body\":{\n" +
-                    "\t\t\t\"title\":\"hello\",\n" +
-                    "\t\t\t\"ticker\":\"hello\",\n" +
-                    "\t\t\t\"text\":\"World\",\n" +
-                    "\t\t\t\"after_open\":\"go_app\",\n" +
-                    "\t\t\t\"play_vibrate\":\"true\",\n" +
-                    "\t\t\t\"play_sound\":\"true\",\"play_lights\":\"true\"\n" +
-                    "\t\t}\n" +
-                    "\t},\n" +
-                    "\t\"policy\":{\n" +
-                    "\t\t\"expire_time\":\"2015-06-14 16:22:19\"\n" +
-                    " \t},\n" +
-                    "\n" +
-                    " \t\"device_tokens\":\"AoLk9ARkNoGWPKHdg9Z2CuzNV7qzoTR9x9vZRbhnSW1x\"\n" +
-                    "}\n";
-            System.out.println("Notification " + postBody);
+        String url = host + postPath;
+        ObjectMapper mapper = new ObjectMapper();
+        String postBody = mapper.writeValueAsString(notification);
+        System.out.println("Notification " + postBody);
 
+        byte[] bodyBytes = postBody.getBytes();
 
-            byte[] bodyBytes = postBody.getBytes();
+        String sign = DigestUtils.md5Hex(("POST" + url + postBody + appMasterSecret).getBytes
+                ("utf8"));
+        url = url + "?sign=" + sign;
 
-            String sign = DigestUtils.md5Hex(("POST" + url + postBody + appMasterSecret).getBytes
-                    ("utf8"));
-            url = url + "?sign=" + sign;
+        HttpURLConnection connection = (HttpURLConnection) new java.net.URL(url)
+                .openConnection();
+        connection.setRequestProperty("User-Agent", USER_AGENT);
+        connection.setDoOutput(true);
+        connection.setFixedLengthStreamingMode(bodyBytes.length);
+        connection.getOutputStream().write(bodyBytes);
+        connection.getOutputStream().close();
 
-            HttpURLConnection connection = (HttpURLConnection) new java.net.URL(url)
-                    .openConnection();
-            connection.setRequestProperty("User-Agent", USER_AGENT);
-            connection.setDoOutput(true);
-            connection.setFixedLengthStreamingMode(bodyBytes.length);
-            connection.getOutputStream().write(bodyBytes);
-            connection.getOutputStream().close();
+        int status = connection.getResponseCode();
+        System.out.println("Response Code : " + status);
 
-            int status = connection.getResponseCode();
-            System.out.println("Response Code : " + status);
+        if (status != 200) {
             BufferedReader rd = new BufferedReader(new InputStreamReader(connection
-                    .getInputStream()));
+                    .getErrorStream()));
+
             StringBuffer result = new StringBuffer();
             String line;
             while ((line = rd.readLine()) != null) {
                 result.append(line);
             }
-            System.out.println(result.toString());
-            if (status == 200) {
-                System.out.println("Notification sent successfully.");
-            } else {
-                System.out.println("Failed to send the notification! "+ status);
-            }
-            return true;
+            throw new Exception("status:" + status + "\n" + result);
+        }
+        return true;
     }
 
 
