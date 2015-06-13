@@ -3,6 +3,7 @@ package com.jadenine.circle.resources;
 import com.jadenine.circle.Storage;
 import com.jadenine.circle.entity.Message;
 import com.jadenine.circle.entity.Topic;
+import com.jadenine.circle.notification.NotificationService;
 import com.jadenine.circle.response.JSONListWrapper;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.table.CloudTable;
@@ -71,6 +72,12 @@ public class MessageResource {
             topic = new Topic(ap, message);
             TableOperation topicUpdateOp = TableOperation.insert(topic);
             Storage.getInstance().getTopicTable().execute(topicUpdateOp);
+            try {
+                NotificationService.notifyNewTopic(topic);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
         } else {
             topic.setLatestMessageId(message.getMessageId());
 

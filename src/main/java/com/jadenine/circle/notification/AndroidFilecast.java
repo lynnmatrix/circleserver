@@ -10,7 +10,7 @@ public class AndroidFilecast extends NotificationWithFile {
 		}
 	}
 
-	public boolean setDeviceTokens(String[] tokens) {
+	public boolean sendDeviceTokensFile(String[] tokens) {
 		try {
 			String fileId = uploadContents(tokens);
 			return null != fileId && !fileId.isEmpty();

@@ -10,7 +10,7 @@ public class AndroidCustomizedcast extends NotificationWithFile {
 		}
 	}
 
-	public boolean setAlias(String aliasType, String[] alias) {
+	public boolean sendAliasFile(String aliasType, String[] alias) {
 		try {
 			setPredefinedKeyValue("alias_type", aliasType);
 			String fileId = uploadContents(alias);
