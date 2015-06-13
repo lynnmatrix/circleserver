@@ -13,7 +13,7 @@ public class NotificationService {
     public static final String ALIAS_TYPE_AP = "AP";
 
     public static boolean testNotifyDevice() throws Exception{
-        AndroidUnicast unicast = new AndroidUnicast();
+        AndroidCustomizedcast unicast = new AndroidCustomizedcast();
 
         unicast.setAppMasterSecret(appMasterSecret);
 
@@ -29,8 +29,11 @@ public class NotificationService {
 
         unicast.setPredefinedKeyValue("production_mode", PRODUCTION_MODE);
 
-        unicast.setPredefinedKeyValue("device_tokens",
-                "AoLk9ARkNoGWPKHdg9Z2CuzNV7qzoTR9x9vZRbhnSW1x");
+//        unicast.setPredefinedKeyValue("device_tokens",
+//                "AoLk9ARkNoGWPKHdg9Z2CuzNV7qzoTR9x9vZRbhnSW1x");
+
+        unicast.setPredefinedKeyValue("alias", "c4:04:15:15:94:61");
+        unicast.setPredefinedKeyValue("alias_type", ALIAS_TYPE_AP);
 
         return unicast.send();
     }
