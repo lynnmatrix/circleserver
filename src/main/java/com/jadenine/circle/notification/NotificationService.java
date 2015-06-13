@@ -9,14 +9,13 @@ public class NotificationService {
     private static final String appMasterSecret = "pjssf88meufwow99spolo3fhym8idral";
     private static final String appkey = "557a4f3f67e58e45f2000660";
 
-    public static boolean testNotifyDevice(){
+    public static boolean testNotifyDevice() throws Exception{
         AndroidUnicast unicast = new AndroidUnicast();
 
         unicast.setAppMasterSecret(appMasterSecret);
 
         // And if you have many alias, you can also upload a file containing these alias, then
         // use file_id to send customized notification.
-        try {
             unicast.setPredefinedKeyValue("appkey", appkey);
             unicast.setPredefinedKeyValue("timestamp", Integer.toString((int) (System
                     .currentTimeMillis() / 1000)));
@@ -33,10 +32,5 @@ public class NotificationService {
                     "AoLk9ARkNoGWPKHdg9Z2CuzNV7qzoTR9x9vZRbhnSW1x");
 
             return unicast.send();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return false;
     }
 }

@@ -51,8 +51,7 @@ public abstract class UmengNotification {
         appMasterSecret = secret;
     }
 
-    public boolean send() {
-        try {
+    public boolean send() throws Exception{
             String url = host + postPath;
             ObjectMapper mapper = new ObjectMapper();
 //            String postBody = mapper.writeValueAsString(notification);
@@ -111,10 +110,6 @@ public abstract class UmengNotification {
                 System.out.println("Failed to send the notification! "+ status);
             }
             return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
     }
 
 

@@ -29,8 +29,33 @@ public class ApResource {
     @GET
     @Path("/list/t/{user}")
     public String list(@PathParam("user") String user) {
-        NotificationService.testNotifyDevice();
-        return "Hello, list for " + user;
+        boolean success = false;
+        Exception le = null;
+        try {
+            success = NotificationService.testNotifyDevice();
+        } catch (Exception e) {
+            le = e;
+            e.printStackTrace();
+        }
+        String result = "Hello, list for " + user + (success ? " SUCCESS" : "FAIL");
+        if (null != le) {
+            result += "\n" + formatCallStack(le
+                    .getStackTrace());
+        }
+        return result;
+
+    }
+
+    public static String formatCallStack(StackTraceElement[] stack) {
+
+        StringBuilder builder = new StringBuilder();
+        for (StackTraceElement element : stack) {
+            builder.append("\tat ");
+            builder.append(element.toString());
+            builder.append("\n");
+        }
+
+        return builder.toString();
     }
 
     @GET
