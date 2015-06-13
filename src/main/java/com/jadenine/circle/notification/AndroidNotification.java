@@ -1,9 +1,9 @@
 package com.jadenine.circle.notification;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
-
-import org.json.JSONObject;
+import java.util.Map;
 
 public abstract class AndroidNotification extends UmengNotification {
 	// Keys can be set in the payload level
@@ -21,44 +21,44 @@ public abstract class AndroidNotification extends UmengNotification {
 	public boolean setPredefinedKeyValue(String key, Object value) throws Exception {
 		if (ROOT_KEYS.contains(key)) {
 			// This key should be in the root level
-			rootJson.put(key, value);
+			notification.put(key, value);
 		} else if (PAYLOAD_KEYS.contains(key)) {
 			// This key should be in the payload level
-			JSONObject payloadJson = null;
-			if (rootJson.has("payload")) {
-				payloadJson = rootJson.getJSONObject("payload");
+			Map<String, Object> payloadJson = null;
+			if (notification.containsKey("payload")) {
+				payloadJson = (Map<String, Object>) notification.get("payload");
 			} else {
-				payloadJson = new JSONObject();
-				rootJson.put("payload", payloadJson);
+				payloadJson = new HashMap<>();
+				notification.put("payload", payloadJson);
 			}
 			payloadJson.put(key, value);
 		} else if (BODY_KEYS.contains(key)) {
 			// This key should be in the body level
-			JSONObject bodyJson = null;
-			JSONObject payloadJson = null;
+			Map<String, Object> bodyJson = null;
+			Map<String, Object> payloadJson = null;
 			// 'body' is under 'payload', so build a payload if it doesn't exist
-			if (rootJson.has("payload")) {
-				payloadJson = rootJson.getJSONObject("payload");
+			if (notification.containsKey("payload")) {
+				payloadJson = (Map<String, Object>) notification.get("payload");
 			} else {
-				payloadJson = new JSONObject();
-				rootJson.put("payload", payloadJson);
+				payloadJson = new HashMap<>();
+				notification.put("payload", payloadJson);
 			}
 			// Get body JSONObject, generate one if not existed
-			if (payloadJson.has("body")) {
-				bodyJson = payloadJson.getJSONObject("body");
+			if (payloadJson.containsKey("body")) {
+				bodyJson = (Map<String, Object>) payloadJson.get("body");
 			} else {
-				bodyJson = new JSONObject();
+				bodyJson = new HashMap<>();
 				payloadJson.put("body", bodyJson);
 			}
 			bodyJson.put(key, value);
 		} else if (POLICY_KEYS.contains(key)) {
 			// This key should be in the body level
-			JSONObject policyJson = null;
-			if (rootJson.has("policy")) {
-				policyJson = rootJson.getJSONObject("policy");
+			Map<String, Object> policyJson = null;
+			if (notification.containsKey("policy")) {
+				policyJson = (Map<String, Object>) notification.get("policy");
 			} else {
-				policyJson = new JSONObject();
-				rootJson.put("policy", policyJson);
+				policyJson = new HashMap<>();
+				notification.put("policy", policyJson);
 			}
 			policyJson.put(key, value);
 		} else {
@@ -73,19 +73,19 @@ public abstract class AndroidNotification extends UmengNotification {
 	
 	// Set extra key/value for Android notification
 	public boolean setExtraField(String key, String value) throws Exception {
-		JSONObject payloadJson = null;
-		JSONObject extraJson = null;
-		if (rootJson.has("payload")) {
-			payloadJson = rootJson.getJSONObject("payload");
+		Map<String, Object> payloadJson = null;
+		Map<String, Object> extraJson = null;
+		if (notification.containsKey("payload")) {
+			payloadJson = (Map<String, Object>) notification.get("payload");
 		} else {
-			payloadJson = new JSONObject();
-			rootJson.put("payload", payloadJson);
+			payloadJson = new HashMap<>();
+			notification.put("payload", payloadJson);
 		}
 		
-		if (payloadJson.has("extra")) {
-			extraJson = payloadJson.getJSONObject("extra");
+		if (payloadJson.containsKey("extra")) {
+			extraJson = (Map<String, Object>) payloadJson.get("extra");
 		} else {
-			extraJson = new JSONObject();
+			extraJson = new HashMap<>();
 			payloadJson.put("extra", extraJson);
 		}
 		extraJson.put(key, value);

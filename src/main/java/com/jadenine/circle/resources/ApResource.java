@@ -2,6 +2,7 @@ package com.jadenine.circle.resources;
 
 import com.jadenine.circle.Storage;
 import com.jadenine.circle.entity.UserAp;
+import com.jadenine.circle.notification.NotificationService;
 import com.jadenine.circle.response.JSONListWrapper;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.table.CloudTable;
@@ -28,6 +29,7 @@ public class ApResource {
     @GET
     @Path("/list/t/{user}")
     public String list(@PathParam("user") String user) {
+        NotificationService.testNotifyDevice();
         return "Hello, list for " + user;
     }
 
