@@ -6,7 +6,7 @@ import com.jadenine.circle.entity.Topic;
  * Created by linym on 6/13/15.
  */
 public class NotificationService {
-    private static final String PRODUCTION_MODE = "false";
+    private static final String PRODUCTION_MODE = "true";
 
     private static final String appMasterSecret = "pjssf88meufwow99spolo3fhym8idral";
     private static final String appkey = "557a4f3f67e58e45f2000660";
