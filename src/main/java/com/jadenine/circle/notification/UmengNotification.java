@@ -57,7 +57,7 @@ public abstract class UmengNotification {
         String postBody = mapper.writeValueAsString(notification);
         System.out.println("Notification " + postBody);
 
-        byte[] bodyBytes = postBody.getBytes();
+        byte[] bodyBytes = postBody.getBytes("utf8");
 
         String sign = DigestUtils.md5Hex(("POST" + url + postBody + appMasterSecret).getBytes
                 ("utf8"));
@@ -67,7 +67,6 @@ public abstract class UmengNotification {
                 .openConnection();
         connection.setRequestProperty("User-Agent", USER_AGENT);
         connection.setDoOutput(true);
-        connection.setFixedLengthStreamingMode(bodyBytes.length);
         connection.getOutputStream().write(bodyBytes);
         connection.getOutputStream().close();
 

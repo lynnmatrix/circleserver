@@ -13,29 +13,10 @@ public class NotificationService {
     public static final String ALIAS_TYPE_AP = "AP";
 
     public static boolean testNotifyDevice() throws Exception{
-        AndroidCustomizedcast unicast = new AndroidCustomizedcast();
-
-        unicast.setAppMasterSecret(appMasterSecret);
-
-        unicast.setPredefinedKeyValue("appkey", appkey);
-        unicast.setPredefinedKeyValue("timestamp", Integer.toString((int) (System
-                .currentTimeMillis() / 1000)));
-
-        unicast.setPredefinedKeyValue("ticker", "Android customizedcast ticker");
-        unicast.setPredefinedKeyValue("title", "中文的title");
-        unicast.setPredefinedKeyValue("text", "Android customizedcast text");
-        unicast.setPredefinedKeyValue("after_open", "go_app");
-        unicast.setPredefinedKeyValue("display_type", "notification");
-
-        unicast.setPredefinedKeyValue("production_mode", PRODUCTION_MODE);
-
-//        unicast.setPredefinedKeyValue("device_tokens",
-//                "AoLk9ARkNoGWPKHdg9Z2CuzNV7qzoTR9x9vZRbhnSW1x");
-
-        unicast.setPredefinedKeyValue("alias", "c4:04:15:15:94:61");
-        unicast.setPredefinedKeyValue("alias_type", ALIAS_TYPE_AP);
-
-        return unicast.send();
+        Topic fakeTopic = new Topic();
+        fakeTopic.setAp("c4:04:15:15:94:61");
+        fakeTopic.setTopic("假 topic");
+        return notifyNewTopic(fakeTopic);
     }
 
     public static boolean notifyNewTopic(Topic topic) throws Exception {
