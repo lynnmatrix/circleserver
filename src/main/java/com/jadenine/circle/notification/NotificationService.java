@@ -1,6 +1,12 @@
 package com.jadenine.circle.notification;
 
 import com.jadenine.circle.entity.Topic;
+import com.sun.javafx.binding.StringFormatter;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by linym on 6/13/15.
@@ -10,7 +16,6 @@ public class NotificationService {
 
     private static final String appMasterSecret = "pjssf88meufwow99spolo3fhym8idral";
     private static final String appkey = "557a4f3f67e58e45f2000660";
-    public static final String ALIAS_TYPE_AP = "AP";
 
     private static final String TEST_AP_JADENINE = "c4:04:15:15:94:61";
 
@@ -22,28 +27,41 @@ public class NotificationService {
     }
 
     public static boolean notifyNewTopic(Topic topic) throws Exception {
-        return notifyAlias(ALIAS_TYPE_AP, topic.getAp(), topic);
+        return groupBroadcast(topic.getAp(), topic);
     }
 
-    public static boolean notifyAlias(String aliasType, String alias, Topic topic) throws Exception {
-        AndroidCustomizedcast customizedcast = new AndroidCustomizedcast();
-        customizedcast.setAppMasterSecret(appMasterSecret);
+    public static boolean groupBroadcast(String tag, Topic topic) throws Exception {
+        AndroidGroupcast groupcast = new AndroidGroupcast();
+        groupcast.setAppMasterSecret(appMasterSecret);
 
-        customizedcast.setPredefinedKeyValue("appkey", appkey);
-        customizedcast.setPredefinedKeyValue("timestamp", Integer.toString((int) (System
+        groupcast.setPredefinedKeyValue("appkey", appkey);
+        groupcast.setPredefinedKeyValue("timestamp", Integer.toString((int) (System
                 .currentTimeMillis() / 1000)));
 
-        customizedcast.setPredefinedKeyValue("ticker", topic.getTopic());
-        customizedcast.setPredefinedKeyValue("title", "New Topic");
-        customizedcast.setPredefinedKeyValue("text", topic.getTopic());
-        customizedcast.setPredefinedKeyValue("after_open", "go_app");
-        customizedcast.setPredefinedKeyValue("display_type", "notification");
+        groupcast.setPredefinedKeyValue("ticker", topic.getTopic());
+        groupcast.setPredefinedKeyValue("title", "New Topic");
+        groupcast.setPredefinedKeyValue("text", topic.getTopic());
+        groupcast.setPredefinedKeyValue("after_open", "go_app");
+        groupcast.setPredefinedKeyValue("display_type", "notification");
 
-        customizedcast.setPredefinedKeyValue("production_mode", PRODUCTION_MODE);
+        groupcast.setPredefinedKeyValue("production_mode", PRODUCTION_MODE);
 
-        customizedcast.setPredefinedKeyValue("alias", alias);
-        customizedcast.setPredefinedKeyValue("alias_type", aliasType);
+        Map<String, Object> filterJson = new HashMap<>();
+        Map<String, Object> whereJson = new HashMap<>();
+        List<Object> tagArray = new ArrayList<>(1);
+        Map<String, Object> testTag = new HashMap<>();
+        testTag.put("tag", tag);
+        tagArray.add(testTag);
 
-        return customizedcast.send();
+        whereJson.put("and", tagArray);
+        filterJson.put("where", whereJson);
+        System.out.println(filterJson.toString());
+
+//        String filterFormat = "{\"where\": { \"and\":[\"tag\":\"%s\"]}";
+//        String filterJson = StringFormatter.format(filterFormat, tag).getValue();
+
+        groupcast.setPredefinedKeyValue("filter", filterJson);
+
+        return groupcast.send();
     }
 }
