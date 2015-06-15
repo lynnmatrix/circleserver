@@ -39,6 +39,7 @@ public class ApResource {
         }
         String result = "Hello, list for " + user + (success ? " SUCCESS" : "FAIL");
         if (null != le) {
+            result += "\n" + le.getMessage();
             result += "\n" + formatCallStack(le
                     .getStackTrace());
         }
