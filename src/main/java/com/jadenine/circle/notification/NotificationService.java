@@ -55,10 +55,6 @@ public class NotificationService {
 
         whereJson.put("and", tagArray);
         filterJson.put("where", whereJson);
-        System.out.println(filterJson.toString());
-
-//        String filterFormat = "{\"where\": { \"and\":[\"tag\":\"%s\"]}";
-//        String filterJson = StringFormatter.format(filterFormat, tag).getValue();
 
         groupcast.setPredefinedKeyValue("filter", filterJson);
 

@@ -55,7 +55,6 @@ public abstract class UmengNotification {
         String url = host + postPath;
         ObjectMapper mapper = new ObjectMapper();
         String postBody = mapper.writeValueAsString(notification);
-        System.out.println("Notification " + postBody);
 
         byte[] bodyBytes = postBody.getBytes("utf8");
 
@@ -71,7 +70,6 @@ public abstract class UmengNotification {
         connection.getOutputStream().close();
 
         int status = connection.getResponseCode();
-        System.out.println("Response Code : " + status);
 
         if (status != 200) {
             BufferedReader rd = new BufferedReader(new InputStreamReader(connection

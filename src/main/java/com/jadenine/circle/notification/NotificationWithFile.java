@@ -41,8 +41,6 @@ public abstract class NotificationWithFile extends AndroidNotification {
         connection.getOutputStream().write(jsonBytes);
         connection.getOutputStream().close();
 
-        System.out.println("Response Code : " + connection.getResponseCode());
-
         Map<String, String> resultMap = mapper.readValue(connection.getInputStream(), HashMap
                 .class);
 
