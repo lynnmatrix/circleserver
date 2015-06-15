@@ -12,9 +12,11 @@ public class NotificationService {
     private static final String appkey = "557a4f3f67e58e45f2000660";
     public static final String ALIAS_TYPE_AP = "AP";
 
+    private static final String TEST_AP_JADENINE = "c4:04:15:15:94:61";
+
     public static boolean testNotifyDevice() throws Exception{
         Topic fakeTopic = new Topic();
-        fakeTopic.setAp("c4:04:15:15:94:61");
+        fakeTopic.setAp(TEST_AP_JADENINE);
         fakeTopic.setTopic("假 topic");
         return notifyNewTopic(fakeTopic);
     }
