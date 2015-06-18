@@ -3,9 +3,11 @@ package com.jadenine.circle.resources;
 import com.jadenine.circle.Storage;
 import com.jadenine.circle.entity.Message;
 import com.jadenine.circle.entity.Topic;
+import com.jadenine.circle.notification.NotificationService;
 import com.jadenine.circle.response.JSONListWrapper;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.table.CloudTable;
+import com.microsoft.azure.storage.table.TableOperation;
 import com.microsoft.azure.storage.table.TableQuery;
 
 import java.util.ArrayList;
@@ -45,4 +47,17 @@ public class TopicResource {
         return new JSONListWrapper(topics);
     }
 
+    @POST
+    @Path("/add")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Topic addTopic(@Valid Topic topic) throws StorageException {
+        TableOperation topicUpdateOp = TableOperation.insert(topic);
+        Storage.getInstance().getTopicTable().execute(topicUpdateOp);
+        try {
+            NotificationService.notifyNewTopic(topic);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return topic;
+    }
 }

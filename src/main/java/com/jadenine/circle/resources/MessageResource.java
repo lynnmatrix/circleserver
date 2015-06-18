@@ -3,7 +3,6 @@ package com.jadenine.circle.resources;
 import com.jadenine.circle.Storage;
 import com.jadenine.circle.entity.Message;
 import com.jadenine.circle.entity.Topic;
-import com.jadenine.circle.notification.NotificationService;
 import com.jadenine.circle.response.JSONListWrapper;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.table.CloudTable;
@@ -50,45 +49,30 @@ public class MessageResource {
     @POST
     @Path("/add")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response addMessage(@QueryParam("ap")String ap, @Valid Message message) throws
+    public Response addMessage(@QueryParam("ap") String ap, @Valid Message message) throws
             StorageException {
 
         if(null != message.getMessageId() && !message.getMessageId().isEmpty()) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        boolean addTopic = null == message.getTopicId() || message.getTopicId().isEmpty();
-
         String messageId = UUID.randomUUID().toString();
         message.setMessageId(messageId);
 
-        Topic topic = null;
-        if (!addTopic) {
-            topic = queryTopic(ap, message.getTopicId());
-            addTopic |= null == topic;
+        Topic topic = queryTopic(ap, message.getTopicId());
+        if(null == topic) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        if (addTopic) {
-            topic = new Topic(ap, message);
-            TableOperation topicUpdateOp = TableOperation.insert(topic);
-            Storage.getInstance().getTopicTable().execute(topicUpdateOp);
-            try {
-                NotificationService.notifyNewTopic(topic);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        topic.setLatestMessageId(message.getMessageId());
 
-        } else {
-            topic.setLatestMessageId(message.getMessageId());
+        TableOperation addOp = TableOperation.insert(message);
+        Storage.getInstance().getMessageTable().execute(addOp);
 
-            TableOperation addOp = TableOperation.insert(message);
-            Storage.getInstance().getMessageTable().execute(addOp);
+        TableOperation topicUpdateOp = TableOperation.replace(topic);
+        Storage.getInstance().getTopicTable().execute(topicUpdateOp);
 
-            TableOperation topicUpdateOp = TableOperation.replace(topic);
-            Storage.getInstance().getTopicTable().execute(topicUpdateOp);
-        }
-
-        return Response.ok().build();
+        return Response.ok().entity(message).build();
     }
 
     private Topic queryTopic(String ap, String topicId) {
@@ -100,10 +84,10 @@ public class MessageResource {
                         TableQuery.Operators.AND,
                         TableQuery.generateFilterCondition(Storage.ROW_KEY,
                                 TableQuery.QueryComparisons.EQUAL,
-                                topicId) ));
+                                topicId)));
 
         Iterable<Topic> topicIterable = Storage.getInstance().getTopicTable().execute(topicQuery);
-        if(topicIterable.iterator().hasNext()) {
+        if (topicIterable.iterator().hasNext()) {
             return topicIterable.iterator().next();
         }
         return null;

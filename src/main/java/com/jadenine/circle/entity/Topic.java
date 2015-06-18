@@ -15,18 +15,6 @@ public class Topic extends TableServiceEntity{
 
     private String latestMessageId;
 
-    public Topic(){}
-
-    public Topic(String ap, Message firstMessage) {
-        partitionKey = ap;
-        rowKey = firstMessage.getMessageId();
-
-        user = firstMessage.getUser();
-        topic = firstMessage.getContent();
-
-        latestMessageId = firstMessage.getMessageId();
-    }
-
     public void setAp(String ap) {
         this.partitionKey = ap;
     }
