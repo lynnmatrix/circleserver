@@ -12,6 +12,7 @@ import com.microsoft.azure.storage.table.TableQuery;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
@@ -51,6 +52,9 @@ public class TopicResource {
     @Path("/add")
     @Consumes(MediaType.APPLICATION_JSON)
     public Topic addTopic(@Valid Topic topic) throws StorageException {
+        String topicId = UUID.randomUUID().toString();
+        topic.setTopicId(topicId);
+
         TableOperation topicUpdateOp = TableOperation.insert(topic);
         Storage.getInstance().getTopicTable().execute(topicUpdateOp);
         try {
