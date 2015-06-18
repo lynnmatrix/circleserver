@@ -49,6 +49,7 @@ public class MessageResource {
     @POST
     @Path("/add")
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response addMessage(@QueryParam("ap") String ap, @Valid Message message) throws
             StorageException {
 

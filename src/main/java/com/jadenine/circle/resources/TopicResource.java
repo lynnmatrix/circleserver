@@ -51,7 +51,8 @@ public class TopicResource {
     @POST
     @Path("/add")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Topic addTopic(@Valid Topic topic) throws StorageException {
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response addTopic(@Valid Topic topic) throws StorageException {
         String topicId = UUID.randomUUID().toString();
         topic.setTopicId(topicId);
 
@@ -62,6 +63,6 @@ public class TopicResource {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return topic;
+        return Response.ok().entity(topic).build();
     }
 }
