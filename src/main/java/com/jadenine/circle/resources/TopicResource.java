@@ -6,11 +6,18 @@ import com.jadenine.circle.entity.Topic;
 import com.jadenine.circle.notification.NotificationService;
 import com.jadenine.circle.response.JSONListWrapper;
 import com.microsoft.azure.storage.StorageException;
+import com.microsoft.azure.storage.core.LazySegmentedIterator;
 import com.microsoft.azure.storage.table.CloudTable;
+import com.microsoft.azure.storage.table.TableBatchOperation;
 import com.microsoft.azure.storage.table.TableOperation;
 import com.microsoft.azure.storage.table.TableQuery;
+import com.microsoft.azure.storage.table.TableRequestOptions;
+import com.microsoft.azure.storage.table.TableResult;
+import com.microsoft.azure.storage.table.TableServiceException;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,17 +40,44 @@ import javax.ws.rs.core.Response;
 public class TopicResource {
 
     public static final int MAX_COUNT = 200;
+    public static final String DEFAULT_PAGE_SIZE = "20";
+    private static final boolean DEBUG_DELETE = true;
+
+    @GET
+    @Path("/delete")
+    public Response deleteTopic(@QueryParam("ap") String ap) throws StorageException {
+        if(!DEBUG_DELETE) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        String apFilter = TableQuery.generateFilterCondition(Storage.PARTITION_KEY, TableQuery
+                .QueryComparisons.EQUAL, ap);
+
+        String filter = apFilter;
+        TableQuery<Topic> query = TableQuery.from(Topic.class).where(filter);
+
+        CloudTable topicTable = Storage.getInstance().getTopicTable();
+
+        Iterable<Topic> topicIterable = topicTable.execute(query);
+        TableBatchOperation op = new TableBatchOperation();
+        for(Topic topic : topicIterable){
+            op.delete(topic);
+        }
+        topicTable.execute(op);
+
+        return Response.ok().build();
+    }
 
     @GET
     @Path("/list")
     @Produces(MediaType.APPLICATION_JSON)
     public Response listTopic(@QueryParam("ap") String ap,
-                                     @QueryParam("count") @DefaultValue("5") Integer count,
-                                     @QueryParam("sinceTimestamp") @DefaultValue("-1") long sinceTimeStamp,
-                                     @QueryParam("beforeTimestamp") @DefaultValue("-1") long beforeTimeStamp) {
+                              @QueryParam("count") @DefaultValue(DEFAULT_PAGE_SIZE) Integer count,
+                              @QueryParam("since_id") String sinceId,
+                              @QueryParam("before_id") String beforeId) {
 
         if(count > MAX_COUNT) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("max count is "
+            return Response.status(Response.Status.BAD_REQUEST).entity("Max count is "
                     + MAX_COUNT).build();
         }
 
@@ -52,30 +86,36 @@ public class TopicResource {
 
         String filter = apFilter;
 
-        if(sinceTimeStamp > 0) {
-            String sinceFilter = TableQuery.generateFilterCondition(Storage.TIMESTAMP, TableQuery.QueryComparisons
-                .GREATER_THAN, sinceTimeStamp);
+        if(null != sinceId) {
+            String sinceFilter = TableQuery.generateFilterCondition(Storage.ROW_KEY, TableQuery
+                    .QueryComparisons
+                .LESS_THAN, sinceId);
             filter = TableQuery.combineFilters(filter, TableQuery.Operators.AND, sinceFilter);
         }
-        if(beforeTimeStamp > 0) {
-            String beforeFilter = TableQuery.generateFilterCondition(Storage.TIMESTAMP, TableQuery.QueryComparisons
-                    .LESS_THAN_OR_EQUAL, sinceTimeStamp);
+        if(null != beforeId) {
+            String beforeFilter = TableQuery.generateFilterCondition(Storage.ROW_KEY,
+                    TableQuery.QueryComparisons
+                    .GREATER_THAN, beforeId);
             filter = TableQuery.combineFilters(filter, TableQuery.Operators.AND, beforeFilter);
         }
 
-        TableQuery<Topic> query = TableQuery.from(Topic.class).where(filter).take(count);
+        Integer takeCount = count + 1;// Used to judge whether has more result.
+        TableQuery<Topic> query = TableQuery.from(Topic.class).where(filter).take(takeCount);
 
         CloudTable topicTable = Storage.getInstance().getTopicTable();
         List<Topic> topics = new ArrayList<>();
 
-        for(Topic topic : topicTable.execute(query)){
-            topics.add(topic);
-            if(topics.size() >= count){
+        boolean hasMore = false;
+        Iterable<Topic> topicIterable = topicTable.execute(query);
+        for(Topic topic : topicIterable){
+            if(topics.size() == count){
+                hasMore = true;
                 break;
             }
+            topics.add(topic);
         }
 
-        return Response.ok().entity(new JSONListWrapper(topics)).build();
+        return Response.ok().entity(new JSONListWrapper(topics, hasMore)).build();
     }
 
     @POST
@@ -83,11 +123,28 @@ public class TopicResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response addTopic(@Valid Topic topic) throws StorageException {
-        String topicId = UUID.randomUUID().toString();
+        return tryAddTopic(topic, 1);
+    }
+
+    private Response tryAddTopic(Topic topic, int currentTryCount) throws StorageException {
+        String topicId = String.valueOf(AutoDecrementIdGenerator.getNextId());
         topic.setTopicId(topicId);
+        topic.setCreatedTimestamp(topic.getTimestamp());
 
         TableOperation topicUpdateOp = TableOperation.insert(topic);
-        Storage.getInstance().getTopicTable().execute(topicUpdateOp);
+        try {
+            Storage.getInstance().getTopicTable().execute(topicUpdateOp);
+        } catch (TableServiceException e) {
+            boolean conflict = Response.Status.CONFLICT.getStatusCode() == e.getHttpStatusCode()
+                    /*&& e.getErrorCode().contains("EntityAlreadyExists")*/;
+
+            if (conflict && currentTryCount++ < 2) {
+                return tryAddTopic(topic, currentTryCount);
+            } else {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+
         try {
             NotificationService.notifyNewTopic(topic);
         } catch (Exception e) {

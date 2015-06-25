@@ -8,6 +8,7 @@ import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.table.CloudTable;
 import com.microsoft.azure.storage.table.TableOperation;
 import com.microsoft.azure.storage.table.TableQuery;
+import com.microsoft.azure.storage.table.TableServiceException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,24 +53,39 @@ public class MessageResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response addMessage(@QueryParam("ap") String ap, @Valid Message message) throws
             StorageException {
-
         if(null != message.getMessageId() && !message.getMessageId().isEmpty()) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
-
-        String messageId = UUID.randomUUID().toString();
-        message.setMessageId(messageId);
 
         Topic topic = queryTopic(ap, message.getTopicId());
         if(null == topic) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        topic.setLatestMessageId(message.getMessageId());
+        return tryAddMessage(topic, message, 1);
+    }
+
+    private Response tryAddMessage(Topic topic, Message message, int currentTryCount)
+            throws StorageException {
+
+        String messageId = String.valueOf(AutoDecrementIdGenerator.getNextId());
+        message.setMessageId(messageId);
 
         TableOperation addOp = TableOperation.insert(message);
-        Storage.getInstance().getMessageTable().execute(addOp);
+        try {
+            Storage.getInstance().getMessageTable().execute(addOp);
+        } catch (TableServiceException e) {
+            boolean conflict = Response.Status.CONFLICT.getStatusCode() == e.getHttpStatusCode()
+                    /*&& e.getErrorCode().contains("EntityAlreadyExists")*/;
 
+            if (conflict && currentTryCount++ < 2) {
+                return tryAddMessage(topic, message, currentTryCount);
+            } else {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+
+        topic.setLatestMessageId(message.getMessageId());
         TableOperation topicUpdateOp = TableOperation.replace(topic);
         Storage.getInstance().getTopicTable().execute(topicUpdateOp);
 
