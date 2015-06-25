@@ -16,6 +16,7 @@ import java.util.UUID;
 
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -30,22 +31,51 @@ import javax.ws.rs.core.Response;
  */
 @Path("/topic")
 public class TopicResource {
+
+    public static final int MAX_COUNT = 200;
+
     @GET
-    @Path("/list/{ap}")
+    @Path("/list")
     @Produces(MediaType.APPLICATION_JSON)
-    public JSONListWrapper listTopic(@PathParam("ap") String ap) {
-        TableQuery<Topic> query = TableQuery.from(Topic.class).where(TableQuery
-                .generateFilterCondition(Storage.PARTITION_KEY, TableQuery.QueryComparisons
-                        .EQUAL, ap));
+    public Response listTopic(@QueryParam("ap") String ap,
+                                     @QueryParam("count") @DefaultValue("5") Integer count,
+                                     @QueryParam("sinceTimestamp") @DefaultValue("-1") long sinceTimeStamp,
+                                     @QueryParam("beforeTimestamp") @DefaultValue("-1") long beforeTimeStamp) {
 
-        CloudTable topicTable = Storage.getInstance().getTopicTable();
-
-        List<Topic> topics = new ArrayList<>();
-        for(Topic topic : topicTable.execute(query)){
-            topics.add(topic);
+        if(count > MAX_COUNT) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("max count is "
+                    + MAX_COUNT).build();
         }
 
-        return new JSONListWrapper(topics);
+        String apFilter = TableQuery.generateFilterCondition(Storage.PARTITION_KEY, TableQuery
+                .QueryComparisons.EQUAL, ap);
+
+        String filter = apFilter;
+
+        if(sinceTimeStamp > 0) {
+            String sinceFilter = TableQuery.generateFilterCondition(Storage.TIMESTAMP, TableQuery.QueryComparisons
+                .GREATER_THAN, sinceTimeStamp);
+            filter = TableQuery.combineFilters(filter, TableQuery.Operators.AND, sinceFilter);
+        }
+        if(beforeTimeStamp > 0) {
+            String beforeFilter = TableQuery.generateFilterCondition(Storage.TIMESTAMP, TableQuery.QueryComparisons
+                    .LESS_THAN_OR_EQUAL, sinceTimeStamp);
+            filter = TableQuery.combineFilters(filter, TableQuery.Operators.AND, beforeFilter);
+        }
+
+        TableQuery<Topic> query = TableQuery.from(Topic.class).where(filter).take(count);
+
+        CloudTable topicTable = Storage.getInstance().getTopicTable();
+        List<Topic> topics = new ArrayList<>();
+
+        for(Topic topic : topicTable.execute(query)){
+            topics.add(topic);
+            if(topics.size() >= count){
+                break;
+            }
+        }
+
+        return Response.ok().entity(new JSONListWrapper(topics)).build();
     }
 
     @POST
