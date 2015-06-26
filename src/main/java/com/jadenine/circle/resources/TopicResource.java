@@ -74,11 +74,17 @@ public class TopicResource {
     public Response listTopic(@QueryParam("ap") String ap,
                               @QueryParam("count") @DefaultValue(DEFAULT_PAGE_SIZE) Integer count,
                               @QueryParam("since_id") String sinceId,
+                              @QueryParam("since_timestamp") Long sinceTimestamp,
                               @QueryParam("before_id") String beforeId) {
 
         if(count > MAX_COUNT) {
             return Response.status(Response.Status.BAD_REQUEST).entity("Max count is "
                     + MAX_COUNT).build();
+        }
+
+        if(null != sinceId && null != sinceTimestamp) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("since_id, since_timestamp" +
+                    " can not be specified at the same time.").build();
         }
 
         String apFilter = TableQuery.generateFilterCondition(Storage.PARTITION_KEY, TableQuery
@@ -92,12 +98,21 @@ public class TopicResource {
                 .LESS_THAN, sinceId);
             filter = TableQuery.combineFilters(filter, TableQuery.Operators.AND, sinceFilter);
         }
+
+        if(null != sinceTimestamp) {
+            Date sinceDate = new Date(sinceTimestamp);
+            String sinceTimestampFilter = TableQuery.generateFilterCondition(Storage.TIMESTAMP,
+                    TableQuery.QueryComparisons.GREATER_THAN_OR_EQUAL, sinceDate);
+            filter = TableQuery.combineFilters(filter, TableQuery.Operators.AND, sinceTimestampFilter);
+        }
+
         if(null != beforeId) {
             String beforeFilter = TableQuery.generateFilterCondition(Storage.ROW_KEY,
                     TableQuery.QueryComparisons
                     .GREATER_THAN, beforeId);
             filter = TableQuery.combineFilters(filter, TableQuery.Operators.AND, beforeFilter);
         }
+
 
         Integer takeCount = count + 1;// Used to judge whether has more result.
         TableQuery<Topic> query = TableQuery.from(Topic.class).where(filter).take(takeCount);
@@ -106,16 +121,18 @@ public class TopicResource {
         List<Topic> topics = new ArrayList<>();
 
         boolean hasMore = false;
+        String nextTopicId = null;
         Iterable<Topic> topicIterable = topicTable.execute(query);
         for(Topic topic : topicIterable){
             if(topics.size() == count){
                 hasMore = true;
+                nextTopicId = topic.getTopicId();
                 break;
             }
             topics.add(topic);
         }
 
-        return Response.ok().entity(new JSONListWrapper(topics, hasMore)).build();
+        return Response.ok().entity(new JSONListWrapper(topics, hasMore, nextTopicId)).build();
     }
 
     @POST
