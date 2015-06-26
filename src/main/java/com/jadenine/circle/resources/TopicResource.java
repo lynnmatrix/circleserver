@@ -101,6 +101,9 @@ public class TopicResource {
 
         if(null != sinceTimestamp) {
             Date sinceDate = new Date(sinceTimestamp);
+            // GREATER_THAN_OR_EQUAL is not effective, since the latest topic on client has the
+            // same timestamp, and will be included in response again.
+            // May be we can exclude this topic in future.
             String sinceTimestampFilter = TableQuery.generateFilterCondition(Storage.TIMESTAMP,
                     TableQuery.QueryComparisons.GREATER_THAN_OR_EQUAL, sinceDate);
             filter = TableQuery.combineFilters(filter, TableQuery.Operators.AND, sinceTimestampFilter);

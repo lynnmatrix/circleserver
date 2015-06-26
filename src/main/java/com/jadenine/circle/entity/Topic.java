@@ -20,9 +20,11 @@ public class Topic extends TableServiceEntity{
     @NotNull
     private String topic;
 
+    private Date createdTimestamp;
+
     private String latestMessageId;
 
-    private Date createdTimestamp;
+    private Integer messageCount = 0;
 
     public void setAp(String ap) {
         this.partitionKey = ap;
@@ -70,5 +72,13 @@ public class Topic extends TableServiceEntity{
 
     public void setCreatedTimestamp(Date createdTimestamp) {
         this.createdTimestamp = createdTimestamp;
+    }
+
+    public Integer getMessageCount() {
+        return messageCount;
+    }
+
+    public void setMessageCount(Integer messageCount) {
+        this.messageCount = messageCount;
     }
 }

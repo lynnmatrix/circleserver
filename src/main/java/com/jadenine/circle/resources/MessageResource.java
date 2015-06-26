@@ -44,6 +44,7 @@ public class MessageResource {
         for(Message message : messageTable.execute(query)){
             messages.add(message);
         }
+
         return new JSONListWrapper(messages);
     }
 
@@ -86,6 +87,10 @@ public class MessageResource {
         }
 
         topic.setLatestMessageId(message.getMessageId());
+        //There is concurrence issue, but doesn't matter, message count is not that important.
+        // We may correct it after all messages of the topic retrieved in listMessages.
+        topic.setMessageCount(topic.getMessageCount() + 1);
+
         TableOperation topicUpdateOp = TableOperation.replace(topic);
         Storage.getInstance().getTopicTable().execute(topicUpdateOp);
 
