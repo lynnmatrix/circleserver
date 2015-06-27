@@ -48,9 +48,10 @@ public class MessageResource {
         CloudTable messageTable = Storage.getInstance().getMessageTable();
 
         List<Message> messages = new ArrayList<>();
-        for(Message message : messageTable.execute(query)) {
+        for (Message message : messageTable.execute(query)) {
             if ((null == message.getAp() || message.getAp().equals(ap))
-                    &&(!message.isPrivate() || message.getReplyToUser().equals(auth))) {
+                    && (!message.getPrivary() || message.getReplyToUser().equals(auth) || message
+                    .getUser().equals(auth))) {
                 messages.add(message);
             }
         }
@@ -62,13 +63,17 @@ public class MessageResource {
     @Path("/add")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addMessage(@QueryParam("ap") String ap, @Valid Message message) throws
+    public Response addMessage(@Valid Message message) throws
             StorageException {
         if(null != message.getMessageId() && !message.getMessageId().isEmpty()) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        Topic topic = queryTopic(ap, message.getTopicId());
+        if(null == message.getAp() || message.getAp().isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        Topic topic = queryTopic(message.getAp(), message.getTopicId());
         if(null == topic) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }

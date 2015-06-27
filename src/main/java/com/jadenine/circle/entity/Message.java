@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.jadenine.circle.Storage;
 import com.microsoft.azure.storage.table.TableServiceEntity;
-import com.sun.xml.internal.ws.developer.Serialization;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -29,7 +28,7 @@ public class Message extends TableServiceEntity {
 
     private String replyToUser;
 
-    private boolean isPrivate;
+    private boolean privary;
 
     public void setTopicId(String topic) {
         partitionKey = topic;
@@ -80,13 +79,12 @@ public class Message extends TableServiceEntity {
         this.replyToUser = replyToUser;
     }
 
-    public boolean isPrivate() {
-        return isPrivate;
+    public boolean getPrivary() {
+        return privary;
     }
 
-    public void setIsPrivate(boolean isPrivate) {
-        this.isPrivate = isPrivate;
+    public void setPrivary(boolean privary) {
+        this.privary = privary;
     }
-
 
 }

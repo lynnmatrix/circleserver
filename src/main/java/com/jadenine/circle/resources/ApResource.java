@@ -19,6 +19,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -26,6 +27,7 @@ import javax.ws.rs.core.MediaType;
  */
 @Path("/ap")
 public class ApResource {
+    //test
     @GET
     @Path("/list/t/{user}")
     public String list(@PathParam("user") String user) {
@@ -59,10 +61,10 @@ public class ApResource {
         return builder.toString();
     }
 
-    @GET
-    @Path("/list/{user}")
+    @POST
+    @Path("/list")
     @Produces(MediaType.APPLICATION_JSON)
-    public JSONListWrapper listAp(@PathParam("user") String user) {
+    public JSONListWrapper listAp(@QueryParam("user") String user) {
         TableQuery<UserAp> query = TableQuery.from(UserAp.class).where(TableQuery
                 .generateFilterCondition(Storage.ROW_KEY, TableQuery.QueryComparisons.EQUAL, user));
 

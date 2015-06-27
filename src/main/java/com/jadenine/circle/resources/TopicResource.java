@@ -41,8 +41,9 @@ public class TopicResource {
 
     public static final int MAX_COUNT = 200;
     public static final String DEFAULT_PAGE_SIZE = "20";
-    private static final boolean DEBUG_DELETE = true;
+    private static final boolean DEBUG_DELETE = false;
 
+    //test
     @GET
     @Path("/delete")
     public Response deleteTopic(@QueryParam("ap") String ap) throws StorageException {
@@ -68,7 +69,7 @@ public class TopicResource {
         return Response.ok().build();
     }
 
-    @GET
+    @POST
     @Path("/list")
     @Produces(MediaType.APPLICATION_JSON)
     public Response listTopic(@QueryParam("ap") String ap,
