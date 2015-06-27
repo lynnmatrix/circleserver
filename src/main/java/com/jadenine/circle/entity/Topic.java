@@ -1,11 +1,13 @@
 package com.jadenine.circle.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.storage.table.TableServiceEntity;
 
 import java.util.Date;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 /**
  * Created by linym on 6/9/15.
@@ -18,6 +20,7 @@ public class Topic extends TableServiceEntity{
     private String user;
 
     @NotNull
+    @Size(min=1, max=256)
     private String topic;
 
     private Date createdTimestamp;

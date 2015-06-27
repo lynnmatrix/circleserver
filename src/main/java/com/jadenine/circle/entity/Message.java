@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.jadenine.circle.Storage;
 import com.microsoft.azure.storage.table.TableServiceEntity;
+import com.sun.xml.internal.ws.developer.Serialization;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -13,12 +14,22 @@ import javax.validation.constraints.Size;
  */
 @JsonIgnoreProperties(value = {Storage.PARTITION_KEY, Storage.ROW_KEY}, ignoreUnknown = true)
 public class Message extends TableServiceEntity {
+
+    public static final String FIELD_AP = "ap";
+
+    @NotNull
+    private String ap;
+
+    @NotNull
+    private String user;
+
     @NotNull
     @Size(min=1, max=256)
     private String content;
 
-    @NotNull
-    private String user;
+    private String replyToUser;
+
+    private boolean isPrivate;
 
     public void setTopicId(String topic) {
         partitionKey = topic;
@@ -36,6 +47,15 @@ public class Message extends TableServiceEntity {
         return rowKey;
     }
 
+    @JsonProperty(FIELD_AP)
+    public String getAp() {
+        return ap;
+    }
+
+    public void setAp(String ap) {
+        this.ap = ap;
+    }
+
     public void setUser(String user){
         this.user = user;
     }
@@ -51,4 +71,22 @@ public class Message extends TableServiceEntity {
     public String getContent(){
         return content;
     }
+
+    public String getReplyToUser() {
+        return replyToUser;
+    }
+
+    public void setReplyToUser(String replyToUser) {
+        this.replyToUser = replyToUser;
+    }
+
+    public boolean isPrivate() {
+        return isPrivate;
+    }
+
+    public void setIsPrivate(boolean isPrivate) {
+        this.isPrivate = isPrivate;
+    }
+
+
 }

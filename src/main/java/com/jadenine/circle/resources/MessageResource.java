@@ -15,8 +15,10 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -30,19 +32,27 @@ import javax.ws.rs.core.Response;
  */
 @Path("/message")
 public class MessageResource {
-    @GET
-    @Path("/list/{topic}")
+    @POST
+    @Path("/list")
     @Produces(MediaType.APPLICATION_JSON)
-    public JSONListWrapper listMessages(@PathParam("topic") String topic) {
-        TableQuery<Message> query = TableQuery.from(Message.class).where(TableQuery
+    public JSONListWrapper listMessages(@QueryParam("auth") @NotNull String auth,
+                                        @QueryParam("ap") @NotNull String ap,
+                                        @QueryParam("topic") @NotNull String topic) {
+
+        String topicFilter = TableQuery
                 .generateFilterCondition(Storage.PARTITION_KEY, TableQuery.QueryComparisons
-                        .EQUAL, topic));
+                        .EQUAL, topic);
+
+        TableQuery<Message> query = TableQuery.from(Message.class).where(topicFilter);
 
         CloudTable messageTable = Storage.getInstance().getMessageTable();
 
         List<Message> messages = new ArrayList<>();
-        for(Message message : messageTable.execute(query)){
-            messages.add(message);
+        for(Message message : messageTable.execute(query)) {
+            if ((null == message.getAp() || message.getAp().equals(ap))
+                    &&(!message.isPrivate() || message.getReplyToUser().equals(auth))) {
+                messages.add(message);
+            }
         }
 
         return new JSONListWrapper(messages);
