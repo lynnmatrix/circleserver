@@ -66,6 +66,8 @@ public class TopicResource {
         }
         topicTable.execute(op);
 
+        //TODO delete related messages
+
         return Response.ok().build();
     }
 

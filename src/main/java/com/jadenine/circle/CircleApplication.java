@@ -1,6 +1,7 @@
 package com.jadenine.circle;
 
 import com.jadenine.circle.resources.ApResource;
+import com.jadenine.circle.resources.ImageResource;
 import com.jadenine.circle.resources.MessageResource;
 import com.jadenine.circle.resources.TopicResource;
 import com.microsoft.azure.storage.StorageException;
@@ -44,6 +45,7 @@ public class CircleApplication extends Application<CircleConfiguration> {
         jersey.register(new ApResource());
         jersey.register(new TopicResource());
         jersey.register(new MessageResource());
+        jersey.register(new ImageResource());
     }
 
 }

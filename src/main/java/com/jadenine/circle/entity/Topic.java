@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.storage.table.TableServiceEntity;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -22,6 +23,8 @@ public class Topic extends TableServiceEntity{
     @NotNull
     @Size(min=1, max=256)
     private String topic;
+
+    private List<String> images;
 
     private Date createdTimestamp;
 
@@ -83,5 +86,13 @@ public class Topic extends TableServiceEntity{
 
     public void setMessageCount(Integer messageCount) {
         this.messageCount = messageCount;
+    }
+
+    public List<String> getImages() {
+        return images;
+    }
+
+    public void setImages(List<String> images) {
+        this.images = images;
     }
 }
