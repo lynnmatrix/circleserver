@@ -3,6 +3,7 @@ package com.jadenine.circle.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.jadenine.circle.Storage;
+import com.microsoft.azure.storage.table.Ignore;
 import com.microsoft.azure.storage.table.TableServiceEntity;
 
 import javax.validation.constraints.NotNull;
@@ -23,13 +24,14 @@ public class Message extends TableServiceEntity {
     private String user;
 
     @NotNull
-    @Size(min=1, max=256)
+    @Size(min=Constants.MIN_CONTENT_LENGTH, max=Constants.MAX_CONTENT_LENGTH)
     private String content;
 
     private String replyToUser;
 
     private boolean privary;
 
+    @Ignore
     public void setTopicId(String topic) {
         partitionKey = topic;
     }
@@ -38,6 +40,7 @@ public class Message extends TableServiceEntity {
         return partitionKey;
     }
 
+    @Ignore
     public void setMessageId(String messageId) {
         rowKey = messageId;
     }

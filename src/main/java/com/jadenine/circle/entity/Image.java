@@ -8,6 +8,8 @@ public class Image {
 
     private String writableSas;
 
+    private String readableSas;
+
     public String getMediaId() {
         return mediaId;
     }
@@ -22,5 +24,13 @@ public class Image {
 
     public void setWritableSas(String writableSas) {
         this.writableSas = writableSas;
+    }
+
+    public String getReadableSas() {
+        return readableSas;
+    }
+
+    public void setReadableSas(String readableSas) {
+        this.readableSas = readableSas;
     }
 }

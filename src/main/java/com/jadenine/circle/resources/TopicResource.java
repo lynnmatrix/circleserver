@@ -1,25 +1,23 @@
 package com.jadenine.circle.resources;
 
 import com.jadenine.circle.Storage;
-import com.jadenine.circle.entity.Message;
 import com.jadenine.circle.entity.Topic;
 import com.jadenine.circle.notification.NotificationService;
 import com.jadenine.circle.response.JSONListWrapper;
 import com.microsoft.azure.storage.StorageException;
-import com.microsoft.azure.storage.core.LazySegmentedIterator;
+import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import com.microsoft.azure.storage.table.CloudTable;
 import com.microsoft.azure.storage.table.TableBatchOperation;
 import com.microsoft.azure.storage.table.TableOperation;
 import com.microsoft.azure.storage.table.TableQuery;
-import com.microsoft.azure.storage.table.TableRequestOptions;
-import com.microsoft.azure.storage.table.TableResult;
 import com.microsoft.azure.storage.table.TableServiceException;
 
+import java.net.URISyntaxException;
+import java.security.InvalidKeyException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
@@ -27,7 +25,6 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -90,6 +87,34 @@ public class TopicResource {
                     " can not be specified at the same time.").build();
         }
 
+        String filter = prepareFilter(ap, sinceId, sinceTimestamp, beforeId);
+
+        Integer takeCount = count + 1;// Used to judge whether has more result.
+        TableQuery<Topic> query = TableQuery.from(Topic.class).where(filter).take(takeCount);
+
+        CloudTable topicTable = Storage.getInstance().getTopicTable();
+
+        boolean hasMore = false;
+        String nextTopicId = null;
+        Iterable<Topic> topicIterable = topicTable.execute(query);
+
+        List<Topic> topics = new ArrayList<>();
+        for(Topic topic : topicIterable){
+            if(topics.size() == count){
+                hasMore = true;
+                nextTopicId = topic.getTopicId();
+                break;
+            }
+            topics.add(topic);
+        }
+
+        return Response.ok().entity(new JSONListWrapper(topics, hasMore, nextTopicId)).build();
+    }
+
+    private String prepareFilter(String ap,
+                                 String sinceId,
+                                 Long sinceTimestamp,
+                                 String beforeId) {
         String apFilter = TableQuery.generateFilterCondition(Storage.PARTITION_KEY, TableQuery
                 .QueryComparisons.EQUAL, ap);
 
@@ -110,6 +135,7 @@ public class TopicResource {
             String sinceTimestampFilter = TableQuery.generateFilterCondition(Storage.TIMESTAMP,
                     TableQuery.QueryComparisons.GREATER_THAN_OR_EQUAL, sinceDate);
             filter = TableQuery.combineFilters(filter, TableQuery.Operators.AND, sinceTimestampFilter);
+
         }
 
         if(null != beforeId) {
@@ -119,26 +145,7 @@ public class TopicResource {
             filter = TableQuery.combineFilters(filter, TableQuery.Operators.AND, beforeFilter);
         }
 
-
-        Integer takeCount = count + 1;// Used to judge whether has more result.
-        TableQuery<Topic> query = TableQuery.from(Topic.class).where(filter).take(takeCount);
-
-        CloudTable topicTable = Storage.getInstance().getTopicTable();
-        List<Topic> topics = new ArrayList<>();
-
-        boolean hasMore = false;
-        String nextTopicId = null;
-        Iterable<Topic> topicIterable = topicTable.execute(query);
-        for(Topic topic : topicIterable){
-            if(topics.size() == count){
-                hasMore = true;
-                nextTopicId = topic.getTopicId();
-                break;
-            }
-            topics.add(topic);
-        }
-
-        return Response.ok().entity(new JSONListWrapper(topics, hasMore, nextTopicId)).build();
+        return filter;
     }
 
     @POST

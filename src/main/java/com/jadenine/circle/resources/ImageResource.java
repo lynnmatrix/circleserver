@@ -26,20 +26,19 @@ public class ImageResource {
     @POST
     @Path("/requestWritableSas")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getWritableSas(){
+    public Response getWritableSas() {
         //TODO limit the size of image upload each time, and daily upload limit.
-        CloudBlobContainer imageBlobContainer = Storage.getInstance().getImageBlobContainer();
+
         String mediaId = String.valueOf(AutoDecrementIdGenerator.getNextId());
+
+        Image image = new Image();
+        image.setMediaId(mediaId);
         try {
+            CloudBlobContainer imageBlobContainer = Storage.getInstance().getImageBlobContainer();
             CloudBlockBlob imageBlob = imageBlobContainer.getBlockBlobReference(mediaId);
-            String sharedAccessSignature = imageBlob.generateSharedAccessSignature(Storage
-                    .getInstance().getWritePolicy(EXPIRE_TIME_IN_MINUTE), null);
-            Image image = new Image();
-            image.setMediaId(mediaId);
-            image.setWritableSas(imageBlob.getUri() + "?"+ sharedAccessSignature);
 
-            return Response.ok().entity(image).build();
-
+            image.setWritableSas(getWritableImageSas(imageBlob));
+            image.setReadableSas(getReadableImageSas(imageBlob));
         } catch (URISyntaxException e) {
             e.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
@@ -50,5 +49,28 @@ public class ImageResource {
             e.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
+
+        return Response.ok().entity(image).build();
+    }
+
+    private String getWritableImageSas(CloudBlockBlob imageBlob) throws URISyntaxException,
+            StorageException, InvalidKeyException {
+
+        String sharedAccessSignature = imageBlob.generateSharedAccessSignature(Storage
+                .getInstance().getWritePolicy(EXPIRE_TIME_IN_MINUTE), null);
+
+        return joinSasUrl(imageBlob, sharedAccessSignature);
+    }
+
+    private String getReadableImageSas(CloudBlockBlob imageBlob) throws URISyntaxException,
+            StorageException, InvalidKeyException {
+        String sharedAccessSignature = imageBlob.generateSharedAccessSignature(null,
+                Storage.getInstance().getReadPolicyIdentifier());
+
+        return joinSasUrl(imageBlob, sharedAccessSignature);
+    }
+
+    private String joinSasUrl(CloudBlockBlob imageBlob, String sharedAccessSignature) {
+        return imageBlob.getUri() + "?" + sharedAccessSignature;
     }
 }

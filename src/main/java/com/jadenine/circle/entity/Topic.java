@@ -1,11 +1,10 @@
 package com.jadenine.circle.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.azure.storage.table.Ignore;
 import com.microsoft.azure.storage.table.TableServiceEntity;
 
 import java.util.Date;
-import java.util.List;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -16,15 +15,16 @@ import javax.validation.constraints.Size;
 @JsonIgnoreProperties(value = {"rowKey", "partitionKey"})
 public class Topic extends TableServiceEntity{
     public static final String CREATED_TIMESTAMP = "CreatedTimestamp";
+    public static final String IMAGE_DELIMITER = ",";
 
     @NotNull
     private String user;
 
     @NotNull
-    @Size(min=1, max=256)
+    @Size(min=Constants.MIN_CONTENT_LENGTH, max=Constants.MAX_CONTENT_LENGTH)
     private String topic;
 
-    private List<String> images;
+    private String images;
 
     private Date createdTimestamp;
 
@@ -32,6 +32,7 @@ public class Topic extends TableServiceEntity{
 
     private Integer messageCount = 0;
 
+    @Ignore
     public void setAp(String ap) {
         this.partitionKey = ap;
     }
@@ -40,6 +41,7 @@ public class Topic extends TableServiceEntity{
         return partitionKey;
     }
 
+    @Ignore
     public String getTopicId(){
         return rowKey;
     }
@@ -88,11 +90,11 @@ public class Topic extends TableServiceEntity{
         this.messageCount = messageCount;
     }
 
-    public List<String> getImages() {
+    public String getImages() {
         return images;
     }
 
-    public void setImages(List<String> images) {
+    public void setImages(String images) {
         this.images = images;
     }
 }

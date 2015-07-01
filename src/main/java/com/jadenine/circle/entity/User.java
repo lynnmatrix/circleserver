@@ -1,6 +1,7 @@
 package com.jadenine.circle.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.microsoft.azure.storage.table.Ignore;
 import com.microsoft.azure.storage.table.TableServiceEntity;
 
 /**
@@ -11,6 +12,7 @@ public class User extends TableServiceEntity {
 
     public User(){}
 
+    @Ignore
     public void setUserId(String userId){
         rowKey = userId;
     }
@@ -19,6 +21,7 @@ public class User extends TableServiceEntity {
         return rowKey;
     }
 
+    @Ignore
     public void setMac(String mac) {
         this.partitionKey = mac;
     }
