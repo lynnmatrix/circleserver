@@ -29,7 +29,7 @@ public class Message extends TableServiceEntity {
 
     private String replyToUser;
 
-    private boolean privary;
+    private boolean privacy;
 
     @Ignore
     public void setTopicId(String topic) {
@@ -82,12 +82,12 @@ public class Message extends TableServiceEntity {
         this.replyToUser = replyToUser;
     }
 
-    public boolean getPrivary() {
-        return privary;
+    public boolean getPrivacy() {
+        return privacy;
     }
 
-    public void setPrivary(boolean privary) {
-        this.privary = privary;
+    public void setPrivacy(boolean privacy) {
+        this.privacy = privacy;
     }
 
 }

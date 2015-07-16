@@ -12,16 +12,12 @@ import com.microsoft.azure.storage.table.TableServiceException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -50,7 +46,7 @@ public class MessageResource {
         List<Message> messages = new ArrayList<>();
         for (Message message : messageTable.execute(query)) {
             if ((null == message.getAp() || message.getAp().equals(ap))
-                    && (!message.getPrivary() || message.getReplyToUser().equals(auth) || message
+                    && (!message.getPrivacy() || message.getReplyToUser().equals(auth) || message
                     .getUser().equals(auth))) {
                 messages.add(message);
             }
