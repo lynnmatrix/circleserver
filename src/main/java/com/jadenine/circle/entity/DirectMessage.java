@@ -1,7 +1,6 @@
 package com.jadenine.circle.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.jadenine.circle.Storage;
 import com.microsoft.azure.storage.table.Ignore;
 import com.microsoft.azure.storage.table.StoreAs;
@@ -16,7 +15,7 @@ import javax.validation.constraints.Size;
 @JsonIgnoreProperties(value = {Storage.PARTITION_KEY, Storage.ROW_KEY}, ignoreUnknown = true)
 public class DirectMessage extends TableServiceEntity {
 
-    public static final String FIELD_USER = "User";//NOTE: Field name is case sensitive!!
+    public static final String FIELD_FROM = "From";//NOTE: Field name is case sensitive!!
 
     //messageId = rowKey
     @NotNull
@@ -29,7 +28,7 @@ public class DirectMessage extends TableServiceEntity {
 
     //to = partitionKey
     @NotNull
-    private String user;
+    private String from;
 
     @NotNull
     @Size(min=Constants.MIN_CONTENT_LENGTH, max=Constants.MAX_CONTENT_LENGTH)
@@ -82,13 +81,13 @@ public class DirectMessage extends TableServiceEntity {
         return partitionKey;
     }
 
-    @StoreAs(name = FIELD_USER)
-    public String getUser() {
-        return user;
+    @StoreAs(name = FIELD_FROM)
+    public String getFrom() {
+        return from;
     }
 
-    public void setUser(String user) {
-        this.user= user;
+    public void setFrom(String from) {
+        this.from = from;
     }
 
     public String getContent() {

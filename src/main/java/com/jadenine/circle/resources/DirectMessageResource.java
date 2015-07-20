@@ -83,12 +83,12 @@ public class DirectMessageResource {
     }
 
     private String prepareListFilter(String auth, Long sinceId, Long beforeId) {
-        //TODO: Query by FIELD_USER will do full scan
+        //TODO: Query by FIELD_FROM will do full scan
         String authFilter = TableQuery.combineFilters(
                 TableQuery.generateFilterCondition(Storage.PARTITION_KEY, TableQuery
                         .QueryComparisons.EQUAL, auth),
                 TableQuery.Operators.OR,
-                TableQuery.generateFilterCondition(DirectMessage.FIELD_USER, TableQuery
+                TableQuery.generateFilterCondition(DirectMessage.FIELD_FROM, TableQuery
                         .QueryComparisons.EQUAL, auth));
 
         String filter = authFilter;
@@ -120,13 +120,23 @@ public class DirectMessageResource {
     @Path("/add")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addMessage(@Valid DirectMessage message) throws StorageException {
+    public Response addMessage(@Valid final DirectMessage message) throws StorageException {
         if (null != message.getMessageId() && !message.getMessageId().isEmpty()) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
+        boolean newChat = null == message.getRootMessageId() || message.getRootMessageId()
+                .isEmpty();
+        if(newChat) {
+            message.setRootUser(message.getFrom());
+        }
 
-        DirectMessage insertedMessage = Storage.tryInsert(Storage.getInstance().getChatTable(),
-                message, 1);
+        final DirectMessage insertedMessage = Storage.tryInsert(Storage.getInstance().getChatTable(),
+                message, 1, newChat? new Storage.IdSetter() {
+                    @Override
+                    public void beforeTryRowKey(String rowKey) {
+                        message.setRootMessageId(rowKey);
+                    }
+                }:null);
         if(null == insertedMessage) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         } else {

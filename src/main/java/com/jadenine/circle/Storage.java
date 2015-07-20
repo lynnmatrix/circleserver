@@ -203,11 +203,18 @@ public class Storage {
         HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
     }
 
+    public interface IdSetter {
+        void beforeTryRowKey(String rowKey);
+    }
     public static <T extends TableServiceEntity> T tryInsert(CloudTable table, T entity, int
-            currentTryCount) throws StorageException {
+            currentTryCount, IdSetter setter) throws StorageException {
 
         String rowKey = String.valueOf(AutoDecrementIdGenerator.getNextId());
         entity.setRowKey(rowKey);
+
+        if(null != setter) {
+            setter.beforeTryRowKey(rowKey);
+        }
 
         TableOperation addOp = TableOperation.insert(entity);
         try {
@@ -217,7 +224,7 @@ public class Storage {
                     /*&& e.getErrorCode().contains("EntityAlreadyExists")*/;
 
             if (conflict && currentTryCount++ < 2) {
-                return tryInsert(table, entity, currentTryCount);
+                return tryInsert(table, entity, currentTryCount, setter);
             } else {
                 return null;
             }
