@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.jadenine.circle.Storage;
 import com.microsoft.azure.storage.table.Ignore;
+import com.microsoft.azure.storage.table.StoreAs;
 import com.microsoft.azure.storage.table.TableServiceEntity;
 
 import javax.validation.constraints.NotNull;
@@ -15,7 +16,7 @@ import javax.validation.constraints.Size;
 @JsonIgnoreProperties(value = {Storage.PARTITION_KEY, Storage.ROW_KEY}, ignoreUnknown = true)
 public class Message extends TableServiceEntity {
 
-    public static final String FIELD_AP = "ap";
+    public static final String FIELD_AP = "Ap";
 
     @NotNull
     private String ap;
@@ -49,7 +50,7 @@ public class Message extends TableServiceEntity {
         return rowKey;
     }
 
-    @JsonProperty(FIELD_AP)
+    @StoreAs(name = FIELD_AP)
     public String getAp() {
         return ap;
     }

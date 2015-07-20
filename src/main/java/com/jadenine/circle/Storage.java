@@ -1,5 +1,6 @@
 package com.jadenine.circle;
 
+import com.jadenine.circle.resources.AutoDecrementIdGenerator;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageCredentials;
 import com.microsoft.azure.storage.StorageCredentialsAccountAndKey;
@@ -12,6 +13,9 @@ import com.microsoft.azure.storage.blob.SharedAccessBlobPermissions;
 import com.microsoft.azure.storage.blob.SharedAccessBlobPolicy;
 import com.microsoft.azure.storage.table.CloudTable;
 import com.microsoft.azure.storage.table.CloudTableClient;
+import com.microsoft.azure.storage.table.TableOperation;
+import com.microsoft.azure.storage.table.TableServiceEntity;
+import com.microsoft.azure.storage.table.TableServiceException;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -28,6 +32,7 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import javax.ws.rs.core.Response;
 
 /**
  * Created by linym on 6/2/15.
@@ -42,6 +47,7 @@ public class Storage {
     private static final String TABLE_USER_AP = "userap";
     private static final String TABLE_TOPIC = "topic";
     private static final String TABLE_MESSAGE = "message";
+    private static final String TABLE_CHAT = "chat";
     private static final String IMAGES_CONTAINER_NAME = "image";
 
     private static final String ACCOUNT_NAME = "circlestorage";
@@ -73,6 +79,7 @@ public class Storage {
     private final CloudTable userApTable;
     private final CloudTable messageTable;
     private final CloudTable topicTable;
+    private final CloudTable chatTable;
     private final CloudBlobContainer imageContainer;
 
     private static Storage sStorage = null;
@@ -102,6 +109,10 @@ public class Storage {
 
     public CloudTable getTopicTable(){
         return topicTable;
+    }
+
+    public CloudTable getChatTable(){
+        return chatTable;
     }
 
     public CloudBlobContainer getImageBlobContainer() {
@@ -140,6 +151,7 @@ public class Storage {
         userApTable = tableClient.getTableReference(TABLE_USER_AP);
         topicTable = tableClient.getTableReference(TABLE_TOPIC);
         messageTable = tableClient.getTableReference(TABLE_MESSAGE);
+        chatTable = tableClient.getTableReference(TABLE_CHAT);
 
         CloudBlobClient cloudBlobClient = account.createCloudBlobClient();
         imageContainer = cloudBlobClient.getContainerReference(IMAGES_CONTAINER_NAME);
@@ -189,6 +201,29 @@ public class Storage {
         sc.init(null, trustAllCerts, new SecureRandom());
 
         HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+    }
+
+    public static <T extends TableServiceEntity> T tryInsert(CloudTable table, T entity, int
+            currentTryCount) throws StorageException {
+
+        String rowKey = String.valueOf(AutoDecrementIdGenerator.getNextId());
+        entity.setRowKey(rowKey);
+
+        TableOperation addOp = TableOperation.insert(entity);
+        try {
+            table.execute(addOp);
+        } catch (TableServiceException e) {
+            boolean conflict = Response.Status.CONFLICT.getStatusCode() == e.getHttpStatusCode()
+                    /*&& e.getErrorCode().contains("EntityAlreadyExists")*/;
+
+            if (conflict && currentTryCount++ < 2) {
+                return tryInsert(table, entity, currentTryCount);
+            } else {
+                return null;
+            }
+        }
+
+        return entity;
     }
 
 }

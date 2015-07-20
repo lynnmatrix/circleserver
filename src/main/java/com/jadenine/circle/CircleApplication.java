@@ -1,6 +1,7 @@
 package com.jadenine.circle;
 
 import com.jadenine.circle.resources.ApResource;
+import com.jadenine.circle.resources.DirectMessageResource;
 import com.jadenine.circle.resources.ImageResource;
 import com.jadenine.circle.resources.MessageResource;
 import com.jadenine.circle.resources.TopicResource;
@@ -36,6 +37,9 @@ public class CircleApplication extends Application<CircleConfiguration> {
 
         CloudTable messageTable = Storage.getInstance().getMessageTable();
         messageTable.createIfNotExists();
+
+        CloudTable chatMessage = Storage.getInstance().getChatTable();
+        chatMessage.createIfNotExists();
     }
 
     @Override
@@ -45,6 +49,7 @@ public class CircleApplication extends Application<CircleConfiguration> {
         jersey.register(new ApResource());
         jersey.register(new TopicResource());
         jersey.register(new MessageResource());
+        jersey.register(new DirectMessageResource());
         jersey.register(new ImageResource());
     }
 

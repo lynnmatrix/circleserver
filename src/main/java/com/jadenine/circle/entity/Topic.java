@@ -5,6 +5,7 @@ import com.microsoft.azure.storage.table.Ignore;
 import com.microsoft.azure.storage.table.TableServiceEntity;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -31,6 +32,8 @@ public class Topic extends TableServiceEntity{
     private String latestMessageId;
 
     private Integer messageCount = 0;
+
+    List<Message> messages;
 
     @Ignore
     public void setAp(String ap) {
@@ -96,5 +99,14 @@ public class Topic extends TableServiceEntity{
 
     public void setImages(String images) {
         this.images = images;
+    }
+
+    @Ignore
+    public List<Message> getMessages() {
+        return messages;
+    }
+
+    public void setMessages(List<Message> messages) {
+        this.messages = messages;
     }
 }

@@ -1,9 +1,11 @@
 package com.jadenine.circle.resources;
 
 import com.jadenine.circle.Storage;
+import com.jadenine.circle.entity.Message;
 import com.jadenine.circle.entity.Topic;
 import com.jadenine.circle.notification.NotificationService;
 import com.jadenine.circle.response.JSONListWrapper;
+import com.jadenine.circle.response.TimelineResult;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
@@ -17,8 +19,11 @@ import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
+import javax.tools.ToolProvider;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -73,21 +78,33 @@ public class TopicResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response listTopic(@QueryParam("ap") String ap,
                               @QueryParam("count") @DefaultValue(DEFAULT_PAGE_SIZE) Integer count,
-                              @QueryParam("since_id") String sinceId,
+                              @QueryParam("since_topic_id") String sinceTopicId,
                               @QueryParam("since_timestamp") Long sinceTimestamp,
-                              @QueryParam("before_id") String beforeId) {
+                              @QueryParam("before_topic_id") String beforeTopicId,
+                              @QueryParam("before_timestamp") Long beforeTimestamp) {
 
         if(count > MAX_COUNT) {
             return Response.status(Response.Status.BAD_REQUEST).entity("Max count is "
                     + MAX_COUNT).build();
         }
 
-        if(null != sinceId && null != sinceTimestamp) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("since_id, since_timestamp" +
+        if(null != sinceTopicId && null != beforeTopicId) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("since_topic_id, " +
+                    "before_topic_id" +
                     " can not be specified at the same time.").build();
         }
 
-        String filter = prepareFilter(ap, sinceId, sinceTimestamp, beforeId);
+        if((null == beforeTopicId) != (null == beforeTimestamp) ) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("before_timestamp and " +
+                    "before_topic_id should be specified at the same time.").build();
+        }
+
+        if((null == sinceTopicId) != (null == sinceTimestamp) ) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("since_timestamp and " +
+                    "since_topic_id should be specified at the same time.").build();
+        }
+
+        String filter = prepareFilter(ap, sinceTopicId, sinceTimestamp, beforeTopicId, beforeTimestamp);
 
         Integer takeCount = count + 1;// Used to judge whether has more result.
         TableQuery<Topic> query = TableQuery.from(Topic.class).where(filter).take(takeCount);
@@ -108,13 +125,37 @@ public class TopicResource {
             topics.add(topic);
         }
 
-        return Response.ok().entity(new JSONListWrapper(topics, hasMore, nextTopicId)).build();
+        CloudTable messageTable = Storage.getInstance().getMessageTable();
+
+        TimelineResult<Topic> result = new TimelineResult<>(topics, new ArrayList(), hasMore, nextTopicId);
+
+        Iterator<Topic> topicIterator = topics.iterator();
+        while (topicIterator.hasNext()){
+            Topic topic = topicIterator.next();
+            String messageFilter = prepareMessageFilter(ap, topic.getTopicId(), sinceTimestamp,
+                    beforeTimestamp);
+            TableQuery<Message> msgQuery = TableQuery.from(Message.class).where(messageFilter).take
+                    (takeCount);
+            LinkedList<Message> messages = new LinkedList<>();
+            for(Message message : messageTable.execute(msgQuery)) {
+                messages.add(message);
+            }
+            topic.setMessages(messages);
+            if(null != sinceTimestamp && (topic.getCreatedTimestamp().getTime() < sinceTimestamp
+                    || topic.getTopicId() == sinceTopicId)) {
+                topicIterator.remove();
+                result.getUpdate().add(topic);
+            }
+        }
+
+        return Response.ok().entity(result).build();
     }
 
     private String prepareFilter(String ap,
                                  String sinceId,
                                  Long sinceTimestamp,
-                                 String beforeId) {
+                                 String beforeId,
+                                 Long beforeTimestamp) {
         String apFilter = TableQuery.generateFilterCondition(Storage.PARTITION_KEY, TableQuery
                 .QueryComparisons.EQUAL, ap);
 
@@ -127,16 +168,6 @@ public class TopicResource {
             filter = TableQuery.combineFilters(filter, TableQuery.Operators.AND, sinceFilter);
         }
 
-        if(null != sinceTimestamp) {
-            Date sinceDate = new Date(sinceTimestamp);
-            // GREATER_THAN_OR_EQUAL is not effective, since the latest topic on client has the
-            // same timestamp, and will be included in response again.
-            // May be we can exclude this topic in future.
-            String sinceTimestampFilter = TableQuery.generateFilterCondition(Storage.TIMESTAMP,
-                    TableQuery.QueryComparisons.GREATER_THAN_OR_EQUAL, sinceDate);
-            filter = TableQuery.combineFilters(filter, TableQuery.Operators.AND, sinceTimestampFilter);
-
-        }
 
         if(null != beforeId) {
             String beforeFilter = TableQuery.generateFilterCondition(Storage.ROW_KEY,
@@ -145,6 +176,42 @@ public class TopicResource {
             filter = TableQuery.combineFilters(filter, TableQuery.Operators.AND, beforeFilter);
         }
 
+        filter = combineTimestampFilter(sinceTimestamp, beforeTimestamp, filter);
+
+        return filter;
+    }
+
+    private String prepareMessageFilter(String ap, String topicId, Long sinceTimestamp, Long
+            beforeTimestamp) {
+        String apFilter = TableQuery.generateFilterCondition(Storage.PARTITION_KEY, TableQuery
+                .QueryComparisons.EQUAL, ap);
+
+        String filter = apFilter;
+
+        String sinceFilter = TableQuery.generateFilterCondition(Storage.ROW_KEY, TableQuery
+                .QueryComparisons
+                .EQUAL, topicId);
+        filter = TableQuery.combineFilters(filter, TableQuery.Operators.AND, sinceFilter);
+
+        filter = combineTimestampFilter(sinceTimestamp, beforeTimestamp, filter);
+
+        return filter;
+    }
+
+    private String combineTimestampFilter(Long sinceTimestamp, Long beforeTimestamp, String filter) {
+        if(null != sinceTimestamp) {
+            Date sinceDate = new Date(sinceTimestamp);
+            String sinceTimestampFilter = TableQuery.generateFilterCondition(Storage.TIMESTAMP,
+                    TableQuery.QueryComparisons.GREATER_THAN_OR_EQUAL, sinceDate);
+            filter = TableQuery.combineFilters(filter, TableQuery.Operators.AND, sinceTimestampFilter);
+        }
+
+        if(null != beforeTimestamp) {
+            Date sinceDate = new Date(beforeTimestamp);
+            String beforeTimestampFilter = TableQuery.generateFilterCondition(Storage.TIMESTAMP,
+                    TableQuery.QueryComparisons.LESS_THAN_OR_EQUAL, sinceDate);
+            filter = TableQuery.combineFilters(filter, TableQuery.Operators.AND, beforeTimestampFilter);
+        }
         return filter;
     }
 
