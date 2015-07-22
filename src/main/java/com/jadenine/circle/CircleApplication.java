@@ -1,9 +1,11 @@
 package com.jadenine.circle;
 
+import com.jadenine.circle.entity.Bomb;
 import com.jadenine.circle.resources.ApResource;
 import com.jadenine.circle.resources.DirectMessageResource;
 import com.jadenine.circle.resources.ImageResource;
 import com.jadenine.circle.resources.MessageResource;
+import com.jadenine.circle.resources.TimelineResource;
 import com.jadenine.circle.resources.TopicResource;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.table.CloudTable;
@@ -40,6 +42,8 @@ public class CircleApplication extends Application<CircleConfiguration> {
 
         CloudTable chatMessage = Storage.getInstance().getChatTable();
         chatMessage.createIfNotExists();
+
+        Storage.getInstance().getBombTable().createIfNotExists();
     }
 
     @Override
@@ -51,6 +55,8 @@ public class CircleApplication extends Application<CircleConfiguration> {
         jersey.register(new MessageResource());
         jersey.register(new DirectMessageResource());
         jersey.register(new ImageResource());
+        jersey.register(new TimelineResource<>(Bomb.class, Storage.getInstance().getBombTable
+                (), 50/*default_page_count*/, 200/*max_page_count*/));
     }
 
 }

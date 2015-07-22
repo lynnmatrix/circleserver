@@ -1,5 +1,6 @@
 package com.jadenine.circle;
 
+import com.jadenine.circle.entity.TimelineEntity;
 import com.jadenine.circle.resources.AutoDecrementIdGenerator;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageCredentials;
@@ -13,6 +14,7 @@ import com.microsoft.azure.storage.blob.SharedAccessBlobPermissions;
 import com.microsoft.azure.storage.blob.SharedAccessBlobPolicy;
 import com.microsoft.azure.storage.table.CloudTable;
 import com.microsoft.azure.storage.table.CloudTableClient;
+import com.microsoft.azure.storage.table.TableEntity;
 import com.microsoft.azure.storage.table.TableOperation;
 import com.microsoft.azure.storage.table.TableServiceEntity;
 import com.microsoft.azure.storage.table.TableServiceException;
@@ -48,27 +50,28 @@ public class Storage {
     private static final String TABLE_TOPIC = "topic";
     private static final String TABLE_MESSAGE = "message";
     private static final String TABLE_CHAT = "chat";
-    private static final String IMAGES_CONTAINER_NAME = "image";
+    private static final String TABLE_BOMB = "bomb";
 
+    private static final String IMAGES_CONTAINER_NAME = "image";
     private static final String ACCOUNT_NAME = "circlestorage";
+
     private static final String ACCOUNT_KEY =
             "SPa+eHBBeJDLV70p3OAH6ldQiObmPDN14QUUXwPbk0yywSwruIff5mwfOBgXurEyo1tUQBcLgKtCgsbDipI/kQ==";
-
     private static final String TABLE_END_POINT = "https://" + ACCOUNT_NAME + ".table.core.chinacloudapi.cn/";
-    private static final String BLOB_END_POINT = "https://" + ACCOUNT_NAME + ".blob.core.chinacloudapi.cn/";
 
+    private static final String BLOB_END_POINT = "https://" + ACCOUNT_NAME + ".blob.core.chinacloudapi.cn/";
     private static final StorageUri BLOB_URI = new StorageUri(URI.create(BLOB_END_POINT));
+
     private static final StorageUri TABLE_URI = new StorageUri(URI.create(TABLE_END_POINT));
 
     public static final String READ_POLICY_IDENTIFIER = "READ_POLICY_IDENTIFIER";
+
 
     // Define the connection-string with your values.
     public static final String storageConnectionString
             = "TableEndpoint=" + TABLE_END_POINT
             + ";AccountName=" + ACCOUNT_NAME
             + ";AccountKey=" + ACCOUNT_KEY;
-
-
     private static final int READ_EXPIRE_IN_YEAR = 10; //10年内有效
 
     private final CloudStorageAccount account;
@@ -80,6 +83,8 @@ public class Storage {
     private final CloudTable messageTable;
     private final CloudTable topicTable;
     private final CloudTable chatTable;
+    private final CloudTable bombTable;
+
     private final CloudBlobContainer imageContainer;
 
     private static Storage sStorage = null;
@@ -113,6 +118,10 @@ public class Storage {
 
     public CloudTable getChatTable(){
         return chatTable;
+    }
+
+    public CloudTable getBombTable() {
+        return bombTable;
     }
 
     public CloudBlobContainer getImageBlobContainer() {
@@ -152,6 +161,7 @@ public class Storage {
         topicTable = tableClient.getTableReference(TABLE_TOPIC);
         messageTable = tableClient.getTableReference(TABLE_MESSAGE);
         chatTable = tableClient.getTableReference(TABLE_CHAT);
+        bombTable = tableClient.getTableReference(TABLE_BOMB);
 
         CloudBlobClient cloudBlobClient = account.createCloudBlobClient();
         imageContainer = cloudBlobClient.getContainerReference(IMAGES_CONTAINER_NAME);
@@ -206,7 +216,7 @@ public class Storage {
     public interface IdSetter {
         void beforeTryRowKey(String rowKey);
     }
-    public static <T extends TableServiceEntity> T tryInsert(CloudTable table, T entity, int
+    public static <T extends TableEntity> T tryInsert(CloudTable table, T entity, int
             currentTryCount, IdSetter setter) throws StorageException {
 
         String rowKey = String.valueOf(AutoDecrementIdGenerator.getNextId());
