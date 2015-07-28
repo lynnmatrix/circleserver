@@ -13,6 +13,9 @@ import javax.validation.constraints.Size;
  */
 @JsonIgnoreProperties(value = {Storage.PARTITION_KEY, Storage.ROW_KEY}, ignoreUnknown = true)
 public class Bomb extends TableServiceEntity implements TimelineEntity {
+    public static final String FIELD_ROOT_USER = "RootUser";
+    public static final String FIELD_FROM = "From";
+    public static final String FIELD_To = "To";
 
     //messageId = rowKey
     //ap = partitionKey

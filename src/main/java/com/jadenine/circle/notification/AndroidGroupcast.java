@@ -1,7 +1,7 @@
 package com.jadenine.circle.notification;
 
-public class AndroidGroupcast extends AndroidNotification {
-	public AndroidGroupcast() {
+public class AndroidGroupCast extends AndroidNotification {
+	public AndroidGroupCast() {
 		try {
 			this.setPredefinedKeyValue("type", "groupcast");	
 		} catch (Exception ex) {

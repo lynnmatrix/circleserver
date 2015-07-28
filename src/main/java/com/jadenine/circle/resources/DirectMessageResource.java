@@ -2,6 +2,7 @@ package com.jadenine.circle.resources;
 
 import com.jadenine.circle.Storage;
 import com.jadenine.circle.entity.DirectMessage;
+import com.jadenine.circle.notification.NotificationService;
 import com.jadenine.circle.response.JSONListWrapper;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.table.CloudTable;
@@ -140,6 +141,11 @@ public class DirectMessageResource {
         if(null == insertedMessage) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         } else {
+            try {
+                NotificationService.notifyNewChat(message);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             return Response.ok().entity(insertedMessage).build();
         }
     }

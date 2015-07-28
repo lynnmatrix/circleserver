@@ -1,7 +1,8 @@
 package com.jadenine.circle.notification;
 
+import com.jadenine.circle.entity.Bomb;
+import com.jadenine.circle.entity.DirectMessage;
 import com.jadenine.circle.entity.Topic;
-import com.sun.javafx.binding.StringFormatter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,21 +31,33 @@ public class NotificationService {
         return groupBroadcast(topic.getAp(), topic);
     }
 
-    public static boolean groupBroadcast(String tag, Topic topic) throws Exception {
-        AndroidGroupcast groupcast = new AndroidGroupcast();
-        groupcast.setAppMasterSecret(appMasterSecret);
+    public static boolean notifyNewTopic(Bomb bomb) throws Exception {
+        return groupBroadcast(bomb.getAp(), bomb.getContent(), bomb.getContent());
+    }
 
-        groupcast.setPredefinedKeyValue("appkey", appkey);
-        groupcast.setPredefinedKeyValue("timestamp", Integer.toString((int) (System
+    public static boolean groupBroadcast(String tag, Topic topic) throws Exception {
+        return groupBroadcast(tag, topic.getTopic(), topic.getTopic());
+    }
+
+    public static boolean notifyNewChat(DirectMessage message) throws Exception {
+        return groupBroadcast(message.getTo(), message.getContent(), message.getContent());
+    }
+
+    private static boolean groupBroadcast(String tag, String ticker, String text) throws Exception {
+        AndroidGroupCast groupCast = new AndroidGroupCast();
+        groupCast.setAppMasterSecret(appMasterSecret);
+
+        groupCast.setPredefinedKeyValue("appkey", appkey);
+        groupCast.setPredefinedKeyValue("timestamp", Integer.toString((int) (System
                 .currentTimeMillis() / 1000)));
 
-        groupcast.setPredefinedKeyValue("ticker", topic.getTopic());
-        groupcast.setPredefinedKeyValue("title", "New Topic");
-        groupcast.setPredefinedKeyValue("text", topic.getTopic());
-        groupcast.setPredefinedKeyValue("after_open", "go_app");
-        groupcast.setPredefinedKeyValue("display_type", "notification");
+        groupCast.setPredefinedKeyValue("ticker", ticker);
+        groupCast.setPredefinedKeyValue("title", "New Topic");
+        groupCast.setPredefinedKeyValue("text", text);
+        groupCast.setPredefinedKeyValue("after_open", "go_app");
+        groupCast.setPredefinedKeyValue("display_type", "notification");
 
-        groupcast.setPredefinedKeyValue("production_mode", PRODUCTION_MODE);
+        groupCast.setPredefinedKeyValue("production_mode", PRODUCTION_MODE);
 
         Map<String, Object> filterJson = new HashMap<>();
         Map<String, Object> whereJson = new HashMap<>();
@@ -56,8 +69,8 @@ public class NotificationService {
         whereJson.put("and", tagArray);
         filterJson.put("where", whereJson);
 
-        groupcast.setPredefinedKeyValue("filter", filterJson);
+        groupCast.setPredefinedKeyValue("filter", filterJson);
 
-        return groupcast.send();
+        return groupCast.send();
     }
 }
