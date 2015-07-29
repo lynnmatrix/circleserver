@@ -60,7 +60,6 @@ public class DirectMessageResource {
         }
 
         String filter = prepareListFilter(auth, sinceId, beforeId);
-        System.out.println(filter);
         Integer takeCount = count +1;
         TableQuery<DirectMessage> chatQuery = TableQuery.from(DirectMessage.class).where
                 (filter).take(takeCount);

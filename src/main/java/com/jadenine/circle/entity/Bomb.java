@@ -78,7 +78,6 @@ public class Bomb extends TableServiceEntity implements TimelineEntity {
         this.from = from;
     }
 
-    @Ignore
     public void setTo(String to) {
         this.to = to;
     }
