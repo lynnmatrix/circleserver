@@ -1,5 +1,6 @@
 package com.jadenine.circle;
 
+import com.jadenine.circle.notification.NotificationService;
 import com.jadenine.circle.resources.ApResource;
 import com.jadenine.circle.resources.BombResource;
 import com.jadenine.circle.resources.DirectMessageResource;
@@ -48,6 +49,8 @@ public class CircleApplication extends Application<CircleConfiguration> {
     @Override
     public void run(CircleConfiguration circleConfiguration, Environment environment) throws
             Exception {
+        NotificationService.setObjectMapper(environment.getObjectMapper());
+
         JerseyEnvironment jersey = environment.jersey();
         jersey.register(new ApResource());
         jersey.register(new TopicResource());
