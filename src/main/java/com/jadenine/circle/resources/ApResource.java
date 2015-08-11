@@ -22,6 +22,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import io.dropwizard.setup.Environment;
+
 /**
  * Created by linym on 6/2/15.
  */
@@ -65,16 +67,8 @@ public class ApResource {
     @Path("/list")
     @Produces(MediaType.APPLICATION_JSON)
     public JSONListWrapper listAp(@QueryParam("user") String user) {
-        TableQuery<UserAp> query = TableQuery.from(UserAp.class).where(TableQuery
-                .generateFilterCondition(Storage.ROW_KEY, TableQuery.QueryComparisons.EQUAL, user));
 
-        CloudTable userApTable = Storage.getInstance().getUserApTable();
-
-        List<UserAp> userAps = new ArrayList<>();
-        for(UserAp userAp : userApTable.execute(query)){
-            userAps.add(userAp);
-        }
-        return new JSONListWrapper(userAps);
+        return new JSONListWrapper(ApLister.list(user));
     }
 
     @POST
@@ -98,6 +92,7 @@ public class ApResource {
         for(UserAp userAp : userApTable.execute(query)){
             userAps.add(userAp);
         }
+
         return new JSONListWrapper(userAps);
     }
 
