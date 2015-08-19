@@ -119,6 +119,7 @@ public class BombResource extends TimelineResource<Bomb> {
         List<Bomb> resultBomb = new ArrayList<>();
 
         for(String topId : topIds) {
+            //TODO if no root found for topic, find the root and the remaining bombs
             resultBomb.addAll(groupedBombs.get(topId));
         }
         return Response.ok().entity(new JSONListWrapper(resultBomb, false, null)).build();
