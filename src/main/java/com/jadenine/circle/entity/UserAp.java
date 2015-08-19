@@ -13,6 +13,10 @@ import com.microsoft.azure.storage.table.TableServiceEntity;
 public class UserAp extends TableServiceEntity {
     private String SSID;
 
+    private String circle;
+
+    private String circleName;
+
     public UserAp(){}
     public UserAp(String user, String ap) {
         this.rowKey = user;
@@ -44,6 +48,22 @@ public class UserAp extends TableServiceEntity {
 
     public void setSSID(String SSID) {
         this.SSID = SSID;
+    }
+
+    public String getCircle() {
+        return circle;
+    }
+
+    public void setCircle(String circle) {
+        this.circle = circle;
+    }
+
+     public String getCircleName() {
+        return circleName;
+    }
+
+    public void setCircleName(String circleName) {
+        this.circleName = circleName;
     }
 
 }

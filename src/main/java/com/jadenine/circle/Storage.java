@@ -1,6 +1,5 @@
 package com.jadenine.circle;
 
-import com.jadenine.circle.entity.TimelineEntity;
 import com.jadenine.circle.resources.AutoDecrementIdGenerator;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageCredentials;
@@ -16,7 +15,6 @@ import com.microsoft.azure.storage.table.CloudTable;
 import com.microsoft.azure.storage.table.CloudTableClient;
 import com.microsoft.azure.storage.table.TableEntity;
 import com.microsoft.azure.storage.table.TableOperation;
-import com.microsoft.azure.storage.table.TableServiceEntity;
 import com.microsoft.azure.storage.table.TableServiceException;
 
 import java.net.URI;
@@ -51,6 +49,9 @@ public class Storage {
     private static final String TABLE_MESSAGE = "message";
     private static final String TABLE_CHAT = "chat";
     private static final String TABLE_BOMB = "bomb";
+    private static final String TABLE_CIRCLE = "circle";
+    private static final String TABLE_ACCESS_POINT = "access_point";
+    private static final String TABLE_USER_CIRCLE = "user_circle";
 
     private static final String IMAGES_CONTAINER_NAME = "image";
     private static final String ACCOUNT_NAME = "circlestorage";
@@ -84,6 +85,10 @@ public class Storage {
     private final CloudTable topicTable;
     private final CloudTable chatTable;
     private final CloudTable bombTable;
+
+    private final CloudTable circleTable;
+    private final CloudTable apTable;
+    private final CloudTable userCircleTable;
 
     private final CloudBlobContainer imageContainer;
 
@@ -124,6 +129,19 @@ public class Storage {
         return bombTable;
     }
 
+    public CloudTable getCircleTable() {
+        return circleTable;
+    }
+
+    public CloudTable getApTable() {
+        return apTable;
+    }
+
+    public CloudTable getUserCircleTable() {
+        return userCircleTable;
+    }
+
+
     public CloudBlobContainer getImageBlobContainer() {
         return imageContainer;
     }
@@ -157,11 +175,31 @@ public class Storage {
         tableClient = account.createCloudTableClient();
 
         userTable = tableClient.getTableReference(TABLE_USER);
+        userTable.createIfNotExists();
+
         userApTable = tableClient.getTableReference(TABLE_USER_AP);
+        userApTable.createIfNotExists();
+
         topicTable = tableClient.getTableReference(TABLE_TOPIC);
+        topicTable.createIfNotExists();
+
         messageTable = tableClient.getTableReference(TABLE_MESSAGE);
+        messageTable.createIfNotExists();
+
         chatTable = tableClient.getTableReference(TABLE_CHAT);
+        chatTable.createIfNotExists();
+
         bombTable = tableClient.getTableReference(TABLE_BOMB);
+        bombTable.createIfNotExists();
+
+        circleTable = tableClient.getTableReference(TABLE_CIRCLE);
+        circleTable.createIfNotExists();
+
+        apTable = tableClient.getTableReference(TABLE_ACCESS_POINT);
+        apTable.createIfNotExists();
+
+        userCircleTable = tableClient.getTableReference(TABLE_USER_CIRCLE);
+        userCircleTable.createIfNotExists();
 
         CloudBlobClient cloudBlobClient = account.createCloudBlobClient();
         imageContainer = cloudBlobClient.getContainerReference(IMAGES_CONTAINER_NAME);
