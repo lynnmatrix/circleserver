@@ -18,7 +18,7 @@ import javax.validation.constraints.NotNull;
  */
 public class CircleLister {
 
-    public static List<Circle> list(@NotNull String user) {
+    public static List<UserCircle> listUserCircle(@NotNull String user) {
         if(null == user || user.length() <= 0) {
             return Collections.emptyList();
         }
@@ -28,9 +28,20 @@ public class CircleLister {
 
         CloudTable userCircleTable = Storage.getInstance().getUserCircleTable();
 
-        String circleFilter= null;
+        List<UserCircle> userCircles = new LinkedList<>();
+        for(UserCircle userCircle : userCircleTable.execute(query)) {
+            userCircles.add(userCircle);
+        }
+        return userCircles;
+    }
 
-        for(UserCircle userCircle : userCircleTable.execute(query)){
+    public static List<Circle> listCircle(@NotNull String user) {
+        if(null == user || user.length() <= 0) {
+            return Collections.emptyList();
+        }
+
+        String circleFilter= null;
+        for(UserCircle userCircle : listUserCircle(user)){
             String localFilter = TableQuery.generateFilterCondition(Storage.ROW_KEY, TableQuery
                     .QueryComparisons.EQUAL, userCircle.getCircle());
             if(null == circleFilter) {

@@ -50,8 +50,8 @@ public class Storage {
     private static final String TABLE_CHAT = "chat";
     private static final String TABLE_BOMB = "bomb";
     private static final String TABLE_CIRCLE = "circle";
-    private static final String TABLE_ACCESS_POINT = "access_point";
-    private static final String TABLE_USER_CIRCLE = "user_circle";
+    private static final String TABLE_ACCESS_POINT = "AccessPoint";
+    private static final String TABLE_USER_CIRCLE = "UserCircle";
 
     private static final String IMAGES_CONTAINER_NAME = "image";
     private static final String ACCOUNT_NAME = "circlestorage";

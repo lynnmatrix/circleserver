@@ -31,7 +31,7 @@ public class CircleResource {
     @Path("/list")
     @Produces(MediaType.APPLICATION_JSON)
     public JSONListWrapper listCircle(@QueryParam("user") String user) {
-        return new JSONListWrapper(CircleLister.list(user));
+        return new JSONListWrapper(CircleLister.listCircle(user));
     }
 
     @POST
@@ -84,6 +84,6 @@ public class CircleResource {
             }
         }
 
-        return Response.ok().entity(CircleLister.list(user)).build();
+        return Response.ok().entity(CircleLister.listCircle(user)).build();
     }
 }

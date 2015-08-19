@@ -41,7 +41,7 @@ public class TimelineResource<T extends TimelineEntity> {
     /**
      * Returns a collection of the most recent timeline messages under the specified ap.
      *
-     * @param ap
+     * @param circle
      * @param count (optional) Specifies the number of messages to try and retrieve, up to a maximum
      *              of 200. The value of count is best thought of as a limit to the number of messages
      *              to return because suspended or deleted content is removed after the count has
@@ -53,7 +53,7 @@ public class TimelineResource<T extends TimelineEntity> {
     @POST
     @Path("/list")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response listMessages(@QueryParam("ap") @NotNull String ap,
+    public Response listMessages(@QueryParam("circle") @NotNull String circle,
                                  @QueryParam("count") Integer count,
                                  @QueryParam("since_id") Long sinceId,
                                  @QueryParam("before_id") Long beforeId) {
@@ -70,7 +70,7 @@ public class TimelineResource<T extends TimelineEntity> {
                     + maxPageSize).build();
         }
 
-        String filter = prepareListFilter(ap, sinceId, beforeId);
+        String filter = prepareListFilter(circle, sinceId, beforeId);
 
         Integer takeCount = count +1;
         TableQuery<T> query = TableQuery.from(clazzType).where
@@ -93,10 +93,10 @@ public class TimelineResource<T extends TimelineEntity> {
                 nextId)).build();
     }
 
-    private String prepareListFilter(String ap, Long sinceId, Long beforeId) {
-        String apFilter = TableQuery.generateFilterCondition(Storage.PARTITION_KEY, TableQuery
-                .QueryComparisons.EQUAL, ap);
-        String filter = apFilter;
+    private String prepareListFilter(String circle, Long sinceId, Long beforeId) {
+        String circleFilter = TableQuery.generateFilterCondition(Storage.PARTITION_KEY, TableQuery
+                .QueryComparisons.EQUAL, circle);
+        String filter = circleFilter;
 
         if(null != sinceId) {
             String sinceFilter = TableQuery.generateFilterCondition(Storage.ROW_KEY, TableQuery
