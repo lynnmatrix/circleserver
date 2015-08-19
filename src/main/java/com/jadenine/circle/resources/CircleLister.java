@@ -51,6 +51,7 @@ public class CircleLister {
                         localFilter);
             }
         }
+
         if(null == circleFilter) {
             return Collections.emptyList();
         }

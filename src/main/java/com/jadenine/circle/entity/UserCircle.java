@@ -11,6 +11,8 @@ import com.microsoft.azure.storage.table.TableServiceEntity;
 @JsonIgnoreProperties(value = {Storage.PARTITION_KEY, Storage.ROW_KEY}, ignoreUnknown = true)
 public class UserCircle extends TableServiceEntity{
 
+    public UserCircle(){}
+
     public UserCircle(String user, String circleId) {
         setUser(user);
         setCircle(circleId);

@@ -20,6 +20,8 @@ public class DirectMessage extends TableServiceEntity {
     //messageId = rowKey
     @NotNull
     private String ap;
+    private String circle;
+
     @NotNull
     private String topicId;
 
@@ -48,6 +50,13 @@ public class DirectMessage extends TableServiceEntity {
     }
     public void setAp(String ap) {
         this.ap = ap;
+    }
+
+    public String getCircle() {
+        return circle;
+    }
+    public void setCircle(String circle) {
+        this.circle = circle;
     }
 
     public String getTopicId() {

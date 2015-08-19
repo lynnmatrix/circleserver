@@ -5,11 +5,14 @@ import com.jadenine.circle.entity.AccessPoint;
 import com.jadenine.circle.entity.Circle;
 import com.jadenine.circle.entity.User;
 import com.jadenine.circle.entity.UserCircle;
+import com.jadenine.circle.response.CircleResult;
 import com.jadenine.circle.response.JSONListWrapper;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.table.CloudTable;
 import com.microsoft.azure.storage.table.TableOperation;
 import com.microsoft.azure.storage.table.TableQuery;
+
+import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -30,8 +33,10 @@ public class CircleResource {
     @POST
     @Path("/list")
     @Produces(MediaType.APPLICATION_JSON)
-    public JSONListWrapper listCircle(@QueryParam("user") String user) {
-        return new JSONListWrapper(CircleLister.listCircle(user));
+    public CircleResult listCircle(@QueryParam("user") String user) {
+        List<Circle> circles = CircleLister.listCircle(user);
+        List<AccessPoint> aps = ApLister.list(circles);
+        return new CircleResult(circles, aps);
     }
 
     @POST
