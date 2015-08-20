@@ -34,14 +34,6 @@ public class Bomb extends TableServiceEntity implements TimelineEntity {
     private String images;
 
     @Ignore
-    public String getAp() {
-        return partitionKey;
-    }
-    public void setAp(String ap) {
-        this.partitionKey = ap;
-    }
-
-    @Ignore
     public String getCircle() {
         return partitionKey;
     }

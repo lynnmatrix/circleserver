@@ -42,11 +42,7 @@ public class Storage {
     public static final String ROW_KEY = "RowKey";
     public static final String TIMESTAMP = "Timestamp";
 
-
     private static final String TABLE_USER = "user";
-    private static final String TABLE_USER_AP = "userap";
-    private static final String TABLE_TOPIC = "topic";
-    private static final String TABLE_MESSAGE = "message";
     private static final String TABLE_CHAT = "chat";
     private static final String TABLE_BOMB = "bomb";
     private static final String TABLE_CIRCLE = "circle";
@@ -80,9 +76,6 @@ public class Storage {
     private final CloudStorageAccount devAccount;
     private final CloudTableClient tableClient;
     private final CloudTable userTable;
-    private final CloudTable userApTable;
-    private final CloudTable messageTable;
-    private final CloudTable topicTable;
     private final CloudTable chatTable;
     private final CloudTable bombTable;
 
@@ -103,22 +96,6 @@ public class Storage {
             }
         }
         return sStorage;
-    }
-
-    public CloudTable getUserApTable() {
-        return userApTable;
-    }
-
-    public CloudTable getUserTable() {
-        return userTable;
-    }
-
-    public CloudTable getMessageTable() {
-        return messageTable;
-    }
-
-    public CloudTable getTopicTable(){
-        return topicTable;
     }
 
     public CloudTable getChatTable(){
@@ -176,15 +153,6 @@ public class Storage {
 
         userTable = tableClient.getTableReference(TABLE_USER);
         userTable.createIfNotExists();
-
-        userApTable = tableClient.getTableReference(TABLE_USER_AP);
-        userApTable.createIfNotExists();
-
-        topicTable = tableClient.getTableReference(TABLE_TOPIC);
-        topicTable.createIfNotExists();
-
-        messageTable = tableClient.getTableReference(TABLE_MESSAGE);
-        messageTable.createIfNotExists();
 
         chatTable = tableClient.getTableReference(TABLE_CHAT);
         chatTable.createIfNotExists();

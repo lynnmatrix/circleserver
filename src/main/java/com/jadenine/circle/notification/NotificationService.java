@@ -3,7 +3,6 @@ package com.jadenine.circle.notification;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jadenine.circle.entity.Bomb;
 import com.jadenine.circle.entity.DirectMessage;
-import com.jadenine.circle.entity.Topic;
 
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -22,37 +21,17 @@ public class NotificationService {
 
     private static final String TEST_AP_JADENINE = "c4:04:15:15:94:61";
     public static final String DISPLAY_TYEPE_MESSAGE = "message";
-    public static final String DISPLAY_TYEPE_NOTIFICATION = "notification";
+    public static final String DISPLAY_TYPE_NOTIFICATION = "notification";
 
     private static ObjectMapper objectMapper;
     public static void setObjectMapper(ObjectMapper objectMapper) {
         NotificationService.objectMapper = objectMapper;
     }
 
-    public static boolean testNotifyDevice() throws Exception{
-        Topic fakeTopic = new Topic();
-        fakeTopic.setAp(TEST_AP_JADENINE);
-        fakeTopic.setTopic("假 topic");
-        return notifyNewTopic(fakeTopic);
-    }
-
-    public static boolean notifyNewTopic(Topic topic) throws Exception {
-        AndroidGroupCast notification = buildCommonGroupCast(DISPLAY_TYEPE_MESSAGE, topic.getAp(), topic
-                        .getTopic(),
-                topic.getTopic());
-        StringWriter writer = new StringWriter();
-        HashMap<String, Object> customMap = new HashMap<>(2);
-        customMap.put("type", "topic");
-        customMap.put("data", topic);
-        objectMapper.writeValue(writer, customMap);
-
-        notification.setPredefinedKeyValue("custom", writer.toString());
-        return notification.send();
-    }
-
     public static boolean notifyNewTopic(Bomb bomb) throws Exception {
-        AndroidGroupCast notification = buildCommonGroupCast(DISPLAY_TYEPE_NOTIFICATION, bomb.getAp(),
-                bomb.getContent(), bomb.getContent());
+        AndroidGroupCast notification = buildCommonGroupCast(DISPLAY_TYPE_NOTIFICATION, bomb
+                        .getCircle(),
+                bomb.getContent(), bomb.getContent(), bomb.getImages());
         StringWriter writer = new StringWriter();
         HashMap<String, Object> customMap = new HashMap<>(2);
         customMap.put("type", "topic");
@@ -65,28 +44,20 @@ public class NotificationService {
         return notification.send();
     }
 
-    public static boolean groupBroadcast(String tag, Topic topic) throws Exception {
-        return groupBroadcast(tag, topic.getTopic(), topic.getTopic());
-    }
-
     public static boolean notifyNewChat(DirectMessage message) throws Exception {
-        return groupBroadcast(message.getTo(), message.getContent(), message.getContent());
-    }
-
-    private static boolean groupBroadcast(String tag, String ticker, String text) throws Exception {
-        AndroidGroupCast groupCast = buildCommonGroupCast(tag, ticker, text);
+        AndroidGroupCast groupCast = buildCommonGroupCast(message.getTo(), message.getContent(),
+                message.getContent(), null);
 
         return groupCast.send();
     }
 
     private static AndroidGroupCast buildCommonGroupCast(String tag, String
-            ticker, String text) throws Exception {
-        return buildCommonGroupCast(DISPLAY_TYEPE_NOTIFICATION, tag, ticker, text);
+            ticker, String text, String img) throws Exception {
+        return buildCommonGroupCast(DISPLAY_TYPE_NOTIFICATION, tag, ticker, text, img);
     }
 
     private static AndroidGroupCast buildCommonGroupCast(String displayType, String tag, String
-            ticker, String
-            text) throws Exception {
+            ticker, String text, String img) throws Exception {
         AndroidGroupCast groupCast = new AndroidGroupCast();
         groupCast.setAppMasterSecret(appMasterSecret);
 
@@ -95,8 +66,11 @@ public class NotificationService {
                 .currentTimeMillis() / 1000)));
 
         groupCast.setPredefinedKeyValue("ticker", ticker);
-        groupCast.setPredefinedKeyValue("title", "New Topic");
+        groupCast.setPredefinedKeyValue("title", tag);
         groupCast.setPredefinedKeyValue("text", text);
+        if(null != img && img.length() > 0) {
+            groupCast.setPredefinedKeyValue("img", img);
+        }
         groupCast.setPredefinedKeyValue("after_open", "go_app");
         groupCast.setPredefinedKeyValue("display_type", displayType);
 

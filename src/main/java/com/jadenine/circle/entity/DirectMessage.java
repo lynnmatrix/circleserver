@@ -18,8 +18,6 @@ public class DirectMessage extends TableServiceEntity {
     public static final String FIELD_FROM = "From";//NOTE: Field name is case sensitive!!
 
     //messageId = rowKey
-    @NotNull
-    private String ap;
     private String circle;
 
     @NotNull
@@ -43,13 +41,6 @@ public class DirectMessage extends TableServiceEntity {
 
     public String getMessageId() {
         return rowKey;
-    }
-
-    public String getAp() {
-        return ap;
-    }
-    public void setAp(String ap) {
-        this.ap = ap;
     }
 
     public String getCircle() {
