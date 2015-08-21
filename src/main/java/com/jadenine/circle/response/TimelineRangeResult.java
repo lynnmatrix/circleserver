@@ -1,7 +1,5 @@
 package com.jadenine.circle.response;
 
-import com.jadenine.circle.resources.TimelineLister;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -25,14 +23,14 @@ public class TimelineRangeResult<T> {
         this.nextId = nextId;
     }
 
-    public List<T> getAll() {
+    public List<T> getItemList() {
         if(null == itemList) {
             return Collections.emptyList();
         }
         return itemList;
     }
 
-    public boolean hasMore(){
+    public boolean getHasMore(){
         return hasMore;
     }
 

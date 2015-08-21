@@ -110,45 +110,51 @@ public class CircleResource {
             ("from_circle") String fromCircle, @QueryParam("name") String name) {
 
         try {
+            //Bomb
             TimelineLister<Bomb> bombLister = new TimelineLister<>(Bomb.class, Storage.getInstance()
-                    .getBombTable(), 200, 1000);
-            updateCircle(bombLister, fromCircle, targetCircle);
+                    .getBombTable(), 500, 1000);
+            changeEntityCircle(bombLister, fromCircle, targetCircle);
 
+            //Chat
             TimelineLister<DirectMessage> chatLister = new TimelineLister<>(DirectMessage.class, Storage
                     .getInstance()
-                    .getBombTable(), 200, 1000);
-            updateCircle(chatLister, fromCircle, targetCircle);
+                    .getBombTable(), 500, 1000);
+            changeEntityCircle(chatLister, fromCircle, targetCircle);
 
+            //AccessPoint
             List<String> fromCircles = Collections.singletonList(fromCircle);
             updateAccessPoints(fromCircles, targetCircle);
 
+            //UserCircle
             List<UserCircle> userCircles = CircleLister.listUserCircleByCircle(fromCircles);
             TableBatchOperation userCircleBatchOperation = new TableBatchOperation();
             List<String> usersInOriginCircles = new LinkedList<>();
 
+            //Delete legacy UserCircle
             for (UserCircle userCircle : userCircles) {
                 userCircleBatchOperation.add(TableOperation.delete(userCircle));
                 usersInOriginCircles.add(userCircle.getUser());
             }
 
+            //Bind users in legacy circle to new circle
             if(!usersInOriginCircles.isEmpty()) {
                 List<UserCircle> userCircleInTargetCircle = CircleLister.listUserCircleByCircle
                         (Collections.singletonList(targetCircle));
-                Set<String> usersInTargetCircle = new LinkedHashSet<>(userCircleInTargetCircle
+                Set<String> usersNeedBindToTargetCircle = new LinkedHashSet<>(userCircleInTargetCircle
                         .size());
 
                 for(UserCircle userCircle : userCircleInTargetCircle) {
-                    if(usersInTargetCircle.contains(userCircle.getUser())) {
+                    if(usersNeedBindToTargetCircle.contains(userCircle.getUser())) {
                         continue;
                     }
-                    usersInTargetCircle.add(userCircle.getUser());
+                    usersNeedBindToTargetCircle.add(userCircle.getUser());
                 }
 
                 for( String user : usersInOriginCircles) {
-                    if(!usersInTargetCircle.contains(user)) {
+                    if(!usersNeedBindToTargetCircle.contains(user)) {
                         UserCircle userCircle = new UserCircle(user, targetCircle);
                         userCircleBatchOperation.add(TableOperation.insert(userCircle));
-                        usersInTargetCircle.add(user);
+                        usersNeedBindToTargetCircle.add(user);
                     }
                 }
             }
@@ -157,6 +163,7 @@ public class CircleResource {
                 Storage.getInstance().getUserCircleTable().execute(userCircleBatchOperation);
             }
 
+            //Circle
             if(null != name && !name.isEmpty()) {
                 Circle circle = CircleLister.getCircle(targetCircle);
                 if(null != circle && !circle.getName().equals(name)) {
@@ -173,21 +180,30 @@ public class CircleResource {
         return Response.ok().build();
     }
 
-    private <T extends TimelineEntity> void updateCircle(TimelineLister<T> bombLister, String
+    private <T extends TimelineEntity> void changeEntityCircle(TimelineLister<T> bombLister, String
             fromCircle, String targetCircle)
             throws StorageException {
         boolean hasMore = true;
         Long beforeId = null;
         while (hasMore) {
-            TableBatchOperation batchOperation = new TableBatchOperation();
-            TimelineRangeResult<T> bombs = bombLister.list(fromCircle, 1000, null, beforeId);
-            hasMore = bombs.hasMore();
-            for (T bomb : bombs.getAll()) {
-                bomb.setCircle(targetCircle);
-                batchOperation.add(TableOperation.replace(bomb));
+            TimelineRangeResult<T> bombs = bombLister.list(fromCircle, null, null, beforeId);
+            hasMore = bombs.getHasMore();
+
+            TableBatchOperation batchDeleteOperation = new TableBatchOperation();
+            for (T bomb : bombs.getItemList()) {
+                batchDeleteOperation.add(TableOperation.delete(bomb));
             }
-            if(!batchOperation.isEmpty()) {
-                Storage.getInstance().getBombTable().execute(batchOperation);
+            if(!batchDeleteOperation.isEmpty()) {
+                Storage.getInstance().getBombTable().execute(batchDeleteOperation);
+            }
+
+            TableBatchOperation batchInsertOperation = new TableBatchOperation();
+            for (T bomb : bombs.getItemList()) {
+                bomb.setCircle(targetCircle);
+                batchInsertOperation.add(TableOperation.insert(bomb));
+            }
+            if(!batchInsertOperation.isEmpty()) {
+                Storage.getInstance().getBombTable().execute(batchInsertOperation);
             }
         }
     }
@@ -196,13 +212,22 @@ public class CircleResource {
             StorageException {
 
         List<AccessPoint> aps = ApLister.list(fromCircles);
-        TableBatchOperation apBatchOperation = new TableBatchOperation();
+        TableBatchOperation apDeleteBatchOperation = new TableBatchOperation();
+        for(AccessPoint ap : aps) {
+            apDeleteBatchOperation.add(TableOperation.delete(ap));
+        }
+        if(!apDeleteBatchOperation.isEmpty()) {
+            Storage.getInstance().getApTable().execute(apDeleteBatchOperation);
+        }
+
+        TableBatchOperation apInsertBatchOperation = new TableBatchOperation();
         for(AccessPoint ap : aps) {
             ap.setCircle(targetCircle);
-            apBatchOperation.add(TableOperation.replace(ap));
+            apInsertBatchOperation.add(TableOperation.insert(ap));
         }
-        if(!apBatchOperation.isEmpty()) {
-            Storage.getInstance().getApTable().execute(apBatchOperation);
+
+        if(!apInsertBatchOperation.isEmpty()) {
+            Storage.getInstance().getApTable().execute(apInsertBatchOperation);
         }
     }
 }
