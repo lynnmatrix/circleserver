@@ -15,15 +15,15 @@ import java.util.List;
  */
 public class ApLister {
 
-    public static List<AccessPoint> list(List<Circle> circles) {
+    public static List<AccessPoint> list(List<String> circles) {
         if(circles.isEmpty()) {
             return Collections.emptyList();
         }
 
         String filter = null;
-        for(Circle circle : circles) {
+        for(String circle : circles) {
             String circleFilter = TableQuery.generateFilterCondition(Storage.PARTITION_KEY,
-                    TableQuery.QueryComparisons.EQUAL, circle.getCircleId());
+                    TableQuery.QueryComparisons.EQUAL, circle);
             if(null == filter) {
                 filter = circleFilter;
             } else {

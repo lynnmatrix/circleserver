@@ -2,12 +2,12 @@ package com.jadenine.circle.resources;
 
 import com.jadenine.circle.Storage;
 import com.jadenine.circle.entity.Bomb;
-import com.jadenine.circle.entity.Circle;
 import com.jadenine.circle.entity.UserCircle;
 import com.jadenine.circle.notification.NotificationService;
-import com.jadenine.circle.response.JSONListWrapper;
+import com.jadenine.circle.response.TimelineRangeResult;
 import com.microsoft.azure.storage.table.TableQuery;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -53,7 +53,12 @@ public class BombResource extends TimelineResource<Bomb> {
 
         String authFilter = TableQuery.generateFilterCondition(Bomb.FIELD_ROOT_USER, TableQuery
                 .QueryComparisons.EQUAL, auth);
-        return lister.list(authFilter, count, sinceId, beforeId);
+        try {
+            return Response.ok().entity(lister.listWithCustomFilter(authFilter, count, sinceId,
+                    beforeId)).build();
+        }catch (InvalidParameterException e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+        }
     }
 
     @POST
@@ -69,7 +74,12 @@ public class BombResource extends TimelineResource<Bomb> {
 
         String authFilter = TableQuery.generateFilterCondition(Bomb.FIELD_FROM, TableQuery
                 .QueryComparisons.EQUAL, auth);
-        return lister.list(authFilter, count, sinceId, beforeId);
+        try {
+            return Response.ok().entity(lister.listWithCustomFilter(authFilter, count, sinceId,
+                    beforeId)).build();
+        } catch (InvalidParameterException e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+        }
     }
 
     @POST
@@ -86,7 +96,12 @@ public class BombResource extends TimelineResource<Bomb> {
 
         String authFilter = TableQuery.generateFilterCondition(Bomb.FIELD_To, TableQuery
                 .QueryComparisons.EQUAL, auth);
-        return lister.list(authFilter, count, sinceId, beforeId);
+        try {
+            return Response.ok().entity(lister.listWithCustomFilter(authFilter, count, sinceId,
+                    beforeId)).build();
+        } catch (InvalidParameterException e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+        }
     }
 
     @POST
@@ -99,7 +114,8 @@ public class BombResource extends TimelineResource<Bomb> {
 
         List<UserCircle> circles = CircleLister.listUserCircle(auth);
         if(circles.isEmpty()) {
-            return Response.ok().entity(new JSONListWrapper(Collections.emptyList())).build();
+            return Response.ok().entity(new TimelineRangeResult<>(Collections.<Bomb>emptyList()))
+                    .build();
         }
 
         String filter = prepareFilter(circles);
@@ -110,7 +126,7 @@ public class BombResource extends TimelineResource<Bomb> {
         Iterable<Bomb> bombIterable = Storage.getInstance().getBombTable().execute(query);
         HashMap<String, LinkedList<Bomb>> groupedBombs = groupBomb(bombIterable);
         if(groupedBombs.size() <= 0) {
-            return Response.ok().entity(new JSONListWrapper(Collections.emptyList())).build();
+            return Response.ok().entity(new TimelineRangeResult(Collections.emptyList())).build();
         }
         MinHeap minHeap = buildMinHeap(groupedBombs);
 
@@ -121,7 +137,7 @@ public class BombResource extends TimelineResource<Bomb> {
             //TODO if no root found for topic, find the root and the remaining bombs
             resultBomb.addAll(groupedBombs.get(topId));
         }
-        return Response.ok().entity(new JSONListWrapper(resultBomb, false, null)).build();
+        return Response.ok().entity(new TimelineRangeResult(resultBomb, false, null)).build();
     }
 
     private String prepareFilter(List<UserCircle> circles) {

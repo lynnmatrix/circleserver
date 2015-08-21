@@ -13,7 +13,7 @@ import javax.validation.constraints.Size;
  * Created by linym on 7/15/15.
  */
 @JsonIgnoreProperties(value = {Storage.PARTITION_KEY, Storage.ROW_KEY}, ignoreUnknown = true)
-public class DirectMessage extends TableServiceEntity {
+public class DirectMessage extends TableServiceEntity implements TimelineEntity {
 
     public static final String FIELD_FROM = "From";//NOTE: Field name is case sensitive!!
 
@@ -43,9 +43,11 @@ public class DirectMessage extends TableServiceEntity {
         return rowKey;
     }
 
+    @Override
     public String getCircle() {
         return circle;
     }
+    @Override
     public void setCircle(String circle) {
         this.circle = circle;
     }

@@ -3,7 +3,7 @@ package com.jadenine.circle.resources;
 import com.jadenine.circle.Storage;
 import com.jadenine.circle.entity.DirectMessage;
 import com.jadenine.circle.notification.NotificationService;
-import com.jadenine.circle.response.JSONListWrapper;
+import com.jadenine.circle.response.TimelineRangeResult;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.table.CloudTable;
 import com.microsoft.azure.storage.table.TableQuery;
@@ -78,7 +78,7 @@ public class DirectMessageResource {
             messages.add(message);
         }
 
-        return Response.status(Response.Status.OK).entity(new JSONListWrapper(messages, hasMore,
+        return Response.status(Response.Status.OK).entity(new TimelineRangeResult(messages, hasMore,
                 nextId)).build();
     }
 

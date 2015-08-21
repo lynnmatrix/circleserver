@@ -2,17 +2,16 @@ package com.jadenine.circle.resources;
 
 import com.jadenine.circle.Storage;
 import com.jadenine.circle.entity.TimelineEntity;
-import com.jadenine.circle.response.JSONListWrapper;
+import com.jadenine.circle.response.TimelineRangeResult;
 import com.microsoft.azure.storage.table.CloudTable;
 import com.microsoft.azure.storage.table.TableQuery;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.core.Response;
-
 /**
- * Created by linym on 7/24/15.
+ * Created by linym on 8/21/15.
  */
 public class TimelineLister<T extends TimelineEntity> {
     private final Class<T> clazzType;
@@ -28,23 +27,32 @@ public class TimelineLister<T extends TimelineEntity> {
         this.maxPageSize = maxPageSize;
     }
 
-    public Response list(String customFilter, Integer count, Long sinceId, Long beforeId){
+    public TimelineRangeResult<T> list(String circle, Integer count, Long sinceId,
+                                    Long beforeId) {
+        String circleFilter = TableQuery.generateFilterCondition(Storage.PARTITION_KEY, TableQuery
+                .QueryComparisons.EQUAL, circle);
+
+        return listWithCustomFilter(circleFilter, count, sinceId, beforeId);
+    }
+
+    public TimelineRangeResult<T> listWithCustomFilter(String customFilter, Integer count, Long
+    sinceId, Long beforeId){
         if(null != sinceId && null != beforeId && sinceId < beforeId) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("since_id must be greater " +
-                    "than before_id").build();
+            throw new InvalidParameterException("since_id must be greater " +
+                    "than before_id");
         }
         if(null == count) {
             count = defaultPageSize;
         }
 
         if(count > maxPageSize) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("Max count is "
-                    + maxPageSize).build();
+            throw new InvalidParameterException("Max count is "
+                    + maxPageSize);
         }
 
-        String filter = prepareRangeFilter(customFilter, sinceId, beforeId);
+        String filter = prepareRangeFilterWithCustomFilter(customFilter, sinceId, beforeId);
 
-        Integer takeCount = count +1;
+        Integer takeCount = count + 1;
         TableQuery<T> query = TableQuery.from(clazzType).where
                 (filter).take(takeCount);
 
@@ -61,11 +69,11 @@ public class TimelineLister<T extends TimelineEntity> {
             messages.add(message);
         }
 
-        return Response.status(Response.Status.OK).entity(new JSONListWrapper(messages, hasMore,
-                nextId)).build();
+        return new TimelineRangeResult<>(messages, hasMore, nextId);
     }
 
-    private String prepareRangeFilter(String customFilter, Long sinceId, Long beforeId) {
+    private String prepareRangeFilterWithCustomFilter(String customFilter, Long sinceId, Long
+            beforeId) {
         String filter = customFilter;
 
         if(null != sinceId) {
