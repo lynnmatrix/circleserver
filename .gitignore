@@ -19,3 +19,5 @@ report
 run.sh
 target/
 tmp-git-deployment-staging/
+myTrustStore
+target/
