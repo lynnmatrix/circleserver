@@ -88,11 +88,15 @@ public class CircleResource {
                 Storage.getInstance().getApTable().execute(TableOperation.replace(serverAp));
             }
 
-            TableQuery<UserCircle> userCircleQuery = TableQuery.from(UserCircle.class).where(TableQuery
-                    .generateFilterCondition(Storage.ROW_KEY, TableQuery.QueryComparisons.EQUAL,
-                            serverAp.getCircle()));
+            String filter = TableQuery.generateFilterCondition(Storage.PARTITION_KEY, TableQuery
+                    .QueryComparisons.EQUAL, user);
+            filter = TableQuery.combineFilters(filter, TableQuery.Operators.AND,
+                    TableQuery.generateFilterCondition(Storage.ROW_KEY, TableQuery
+                            .QueryComparisons.EQUAL, serverAp.getCircle()));
 
-            boolean alreadyBindCircle = !userCircleTable.execute(userCircleQuery).iterator().hasNext();
+            TableQuery<UserCircle> userCircleQuery = TableQuery.from(UserCircle.class).where(filter);
+
+            boolean alreadyBindCircle = userCircleTable.execute(userCircleQuery).iterator().hasNext();
 
             if (!alreadyBindCircle){
                 UserCircle userCircle = new UserCircle(user, serverAp.getCircle());
