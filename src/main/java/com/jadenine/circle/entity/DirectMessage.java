@@ -14,11 +14,11 @@ import javax.validation.constraints.Size;
  */
 @JsonIgnoreProperties(value = {Storage.PARTITION_KEY, Storage.ROW_KEY}, ignoreUnknown = true)
 public class DirectMessage extends TableServiceEntity implements TimelineEntity {
-
     public static final String FIELD_FROM = "From";//NOTE: Field name is case sensitive!!
+    public static final String FIELD_TO = "To";
 
+    //circle = partitionKey
     //messageId = rowKey
-    private String circle;
 
     @NotNull
     private String topicId;
@@ -26,9 +26,9 @@ public class DirectMessage extends TableServiceEntity implements TimelineEntity 
     private String rootMessageId;
     private String rootUser;
 
-    //to = partitionKey
     @NotNull
     private String from;
+    private String to;
 
     @NotNull
     @Size(min=Constants.MIN_CONTENT_LENGTH, max=Constants.MAX_CONTENT_LENGTH)
@@ -44,12 +44,13 @@ public class DirectMessage extends TableServiceEntity implements TimelineEntity 
     }
 
     @Override
+    @Ignore
     public String getCircle() {
-        return circle;
+        return partitionKey;
     }
     @Override
     public void setCircle(String circle) {
-        this.circle = circle;
+        setPartitionKey(circle);
     }
 
     public String getTopicId() {
@@ -75,12 +76,11 @@ public class DirectMessage extends TableServiceEntity implements TimelineEntity 
         this.rootUser = rootUser;
     }
 
-    @Ignore
     public void setTo(String to) {
-        partitionKey = to;
+        this.to = to;
     }
     public String getTo() {
-        return partitionKey;
+        return to;
     }
 
     @StoreAs(name = FIELD_FROM)

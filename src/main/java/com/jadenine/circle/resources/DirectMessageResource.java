@@ -90,7 +90,7 @@ public class DirectMessageResource {
         String filter = genCircleFilter(circles);
 
         String authFilter = TableQuery.combineFilters(
-                TableQuery.generateFilterCondition(Storage.PARTITION_KEY, TableQuery
+                TableQuery.generateFilterCondition(DirectMessage.FIELD_TO, TableQuery
                         .QueryComparisons.EQUAL, auth),
                 TableQuery.Operators.OR,
                 TableQuery.generateFilterCondition(DirectMessage.FIELD_FROM, TableQuery

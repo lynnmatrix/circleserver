@@ -17,8 +17,8 @@ public class Bomb extends TableServiceEntity implements TimelineEntity {
     public static final String FIELD_FROM = "From";
     public static final String FIELD_To = "To";
 
+    //circle = partitionKey
     //messageId = rowKey
-    //ap = partitionKey
 
     private String rootMessageId;
     private String rootUser;
