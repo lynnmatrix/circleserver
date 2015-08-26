@@ -87,7 +87,9 @@ public class TimelineResource<T extends TimelineEntity> {
         if(null == insertedMessage) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         } else {
-            notifyNewMessage(message);
+            if(newMessage) {
+                notifyNewMessage(message);
+            }
             return Response.ok().entity(insertedMessage).build();
         }
     }
