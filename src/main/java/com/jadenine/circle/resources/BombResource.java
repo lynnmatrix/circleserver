@@ -51,10 +51,16 @@ public class BombResource extends TimelineResource<Bomb> {
             return Response.status(Response.Status.BAD_REQUEST).entity("No auth").build();
         }
 
+        List<UserCircle> circles = CircleLister.listUserCircle(auth);
+
+        String filter = genCircleFilter(circles);
+
         String authFilter = TableQuery.generateFilterCondition(Bomb.FIELD_ROOT_USER, TableQuery
                 .QueryComparisons.EQUAL, auth);
+        filter = TableQuery.combineFilters(filter, TableQuery.Operators.AND, authFilter);
+
         try {
-            return Response.ok().entity(lister.listWithCustomFilter(authFilter, count, sinceId,
+            return Response.ok().entity(lister.listWithCustomFilter(filter, count, sinceId,
                     beforeId)).build();
         }catch (InvalidParameterException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
@@ -72,10 +78,16 @@ public class BombResource extends TimelineResource<Bomb> {
             return Response.status(Response.Status.BAD_REQUEST).entity("No auth").build();
         }
 
+        List<UserCircle> circles = CircleLister.listUserCircle(auth);
+
+        String filter = genCircleFilter(circles);
+
         String authFilter = TableQuery.generateFilterCondition(Bomb.FIELD_FROM, TableQuery
                 .QueryComparisons.EQUAL, auth);
+        filter = TableQuery.combineFilters(filter, TableQuery.Operators.AND, authFilter);
+
         try {
-            return Response.ok().entity(lister.listWithCustomFilter(authFilter, count, sinceId,
+            return Response.ok().entity(lister.listWithCustomFilter(filter, count, sinceId,
                     beforeId)).build();
         } catch (InvalidParameterException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
@@ -94,10 +106,17 @@ public class BombResource extends TimelineResource<Bomb> {
             return Response.status(Response.Status.BAD_REQUEST).entity("No auth").build();
         }
 
+        List<UserCircle> circles = CircleLister.listUserCircle(auth);
+
+        String filter = genCircleFilter(circles);
+
         String authFilter = TableQuery.generateFilterCondition(Bomb.FIELD_To, TableQuery
                 .QueryComparisons.EQUAL, auth);
+
+        filter = TableQuery.combineFilters(filter, TableQuery.Operators.AND, authFilter);
+
         try {
-            return Response.ok().entity(lister.listWithCustomFilter(authFilter, count, sinceId,
+            return Response.ok().entity(lister.listWithCustomFilter(filter, count, sinceId,
                     beforeId)).build();
         } catch (InvalidParameterException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
@@ -209,4 +228,5 @@ public class BombResource extends TimelineResource<Bomb> {
             e.printStackTrace();
         }
     }
+
 }
