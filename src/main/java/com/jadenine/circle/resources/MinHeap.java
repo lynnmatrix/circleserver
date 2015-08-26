@@ -5,6 +5,7 @@ import com.jadenine.circle.entity.Bomb;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,8 +31,8 @@ class MinHeap {
     }
 
     private void heapify(int pos) {
-        int l = pos << 1 + 1;
-        int r = pos << 1 + 2;
+        int l = (pos << 1) + 1;
+        int r = (pos << 1) + 2;
         int smallestIndex = pos;
         if (l < k && heap.get(l).getValue().size() < heap.get(smallestIndex).getValue().size()) {
             smallestIndex = l;
@@ -61,6 +62,16 @@ class MinHeap {
             heap.set(0, entry);
             heapify(0);
         }
+    }
+
+    public void print() {
+        System.out.println("----begin----");
+        for(int i = 0; i< heap.size(); i++) {
+            Map.Entry<String, LinkedList<Bomb>> entry = heap.get(i);
+            List<Bomb> bombs = entry.getValue();
+            System.out.println(i+" bomb:"+ bombs.size() + " " +bombs.get(0).getContent() );
+        }
+        System.out.println("----end----");
     }
 
     public String[] top() {
