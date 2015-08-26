@@ -1,7 +1,9 @@
 package com.jadenine.circle.resources;
 
 import com.jadenine.circle.Storage;
+import com.jadenine.circle.entity.Bomb;
 import com.jadenine.circle.entity.DirectMessage;
+import com.jadenine.circle.entity.UserCircle;
 import com.jadenine.circle.notification.NotificationService;
 import com.jadenine.circle.response.TimelineRangeResult;
 import com.microsoft.azure.storage.StorageException;
@@ -83,15 +85,17 @@ public class DirectMessageResource {
     }
 
     private String prepareListFilter(String auth, Long sinceId, Long beforeId) {
-        //TODO: Query by FIELD_FROM will do full scan
+        List<UserCircle> circles = CircleLister.listUserCircle(auth);
+
+        String filter = genCircleFilter(circles);
+
         String authFilter = TableQuery.combineFilters(
                 TableQuery.generateFilterCondition(Storage.PARTITION_KEY, TableQuery
                         .QueryComparisons.EQUAL, auth),
                 TableQuery.Operators.OR,
                 TableQuery.generateFilterCondition(DirectMessage.FIELD_FROM, TableQuery
                         .QueryComparisons.EQUAL, auth));
-
-        String filter = authFilter;
+        filter = TableQuery.combineFilters(filter, TableQuery.Operators.AND, authFilter);
 
         if(null != sinceId) {
             String sinceFilter = TableQuery.generateFilterCondition(Storage.ROW_KEY, TableQuery
@@ -108,6 +112,20 @@ public class DirectMessageResource {
         }
 
         return filter;
+    }
+
+    private String genCircleFilter(List<UserCircle> userCircles) {
+        String circleFilter = null;
+        for(UserCircle userCircle : userCircles) {
+            String apFilter = TableQuery.generateFilterCondition(Storage.PARTITION_KEY, TableQuery
+                    .QueryComparisons.EQUAL, userCircle.getCircle());
+            if (null == circleFilter) {
+                circleFilter = apFilter;
+            } else {
+                circleFilter = TableQuery.combineFilters(circleFilter, TableQuery.Operators.OR, apFilter);
+            }
+        }
+        return circleFilter;
     }
 
     /**
