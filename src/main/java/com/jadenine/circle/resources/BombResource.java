@@ -2,9 +2,13 @@ package com.jadenine.circle.resources;
 
 import com.jadenine.circle.Storage;
 import com.jadenine.circle.entity.Bomb;
+import com.jadenine.circle.entity.Constants;
 import com.jadenine.circle.entity.UserCircle;
 import com.jadenine.circle.notification.NotificationService;
 import com.jadenine.circle.response.TimelineRangeResult;
+import com.microsoft.azure.storage.StorageException;
+import com.microsoft.azure.storage.table.TableBatchOperation;
+import com.microsoft.azure.storage.table.TableOperation;
 import com.microsoft.azure.storage.table.TableQuery;
 
 import java.security.InvalidParameterException;
@@ -157,6 +161,49 @@ public class BombResource extends TimelineResource<Bomb> {
             resultBomb.addAll(groupedBombs.get(topId));
         }
         return Response.ok().entity(new TimelineRangeResult(resultBomb, false, null)).build();
+    }
+
+    @POST
+    @Path("/delete")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response delete(@QueryParam("auth") @NotNull String auth,
+                           @QueryParam("circle") String circle,
+                           @QueryParam("topic_id") String topicId) {
+        String rootUserFilter = TableQuery.generateFilterCondition(Bomb.FIELD_ROOT_USER,
+                TableQuery.QueryComparisons.EQUAL, auth);
+        String circleFilter = TableQuery.generateFilterCondition(Storage.PARTITION_KEY, TableQuery
+                .QueryComparisons.EQUAL, circle);
+
+        String topicFilter = TableQuery.generateFilterCondition(Bomb.FIELD_ROOT_MESSAGE_ID,
+                TableQuery
+                        .QueryComparisons.EQUAL, topicId);
+
+        String filter = rootUserFilter;
+        filter = TableQuery.combineFilters(filter, TableQuery.Operators.AND, circleFilter);
+        filter = TableQuery.combineFilters(filter, TableQuery.Operators.AND, topicFilter);
+
+        TimelineLister<Bomb> timelineLister = new TimelineLister<>(Bomb.class, Storage
+                .getInstance().getBombTable(), 50, 500);
+        Long beforeId = null;
+        boolean hasMore =true;
+        while (hasMore) {
+            TimelineRangeResult<Bomb> bombs = timelineLister.listWithCustomFilter(filter, 200, null,
+                    beforeId);
+            hasMore = bombs.getHasMore();
+            TableBatchOperation deleteBatchOperations = new TableBatchOperation();
+            for(Bomb bomb : bombs.getItemList()) {
+                deleteBatchOperations.add(TableOperation.delete(bomb));
+            }
+            if(deleteBatchOperations.size() > 0) {
+                try {
+                    Storage.getInstance().getBombTable().execute(deleteBatchOperations);
+                } catch (StorageException e) {
+                    return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+                }
+            }
+        }
+
+        return Response.ok().build();
     }
 
     private String prepareFilter(List<UserCircle> circles) {

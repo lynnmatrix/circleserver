@@ -83,7 +83,8 @@ public class CircleResource {
             UserCircle userCircle = new UserCircle(user, circle.getCircleId());
             userCircleTable.execute(TableOperation.insert(userCircle));
         } else {
-            if(!serverAp.getSSID().equals(ap.getSSID())) {
+            if(null == serverAp.getSSID() || !serverAp.getSSID().equals(ap.getSSID()) && null!=
+                    ap.getSSID()) {
                 serverAp.setSSID(ap.getSSID());
                 Storage.getInstance().getApTable().execute(TableOperation.replace(serverAp));
             }
