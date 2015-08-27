@@ -31,7 +31,7 @@ public class DirectMessage extends TableServiceEntity implements TimelineEntity 
     private String to;
 
     @NotNull
-    @Size(min=Constants.MIN_CONTENT_LENGTH, max=Constants.MAX_CONTENT_LENGTH)
+    @Size(min=Constants.MIN_CONTENT_LENGTH)
     private String content;
 
     @Ignore
