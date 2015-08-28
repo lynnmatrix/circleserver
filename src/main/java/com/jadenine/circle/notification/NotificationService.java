@@ -80,7 +80,7 @@ public class NotificationService {
         if(null != img && img.length() > 0) {
             groupCast.setPredefinedKeyValue("img", img);
         }
-        groupCast.setPredefinedKeyValue("after_open", "go_app");
+        groupCast.setPredefinedKeyValue("after_open", "custom");
         groupCast.setPredefinedKeyValue("display_type", displayType);
 
         groupCast.setPredefinedKeyValue("production_mode", PRODUCTION_MODE);
